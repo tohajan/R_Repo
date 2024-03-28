@@ -1,7 +1,6 @@
 Data Handling & ggplot
 ================
 Toheeb
-2024-03-28
 
 # **PART 1**
 
@@ -9,7 +8,7 @@ Toheeb
 
 ``` r
 carseats <- read.csv("G:/My Drive/Programming/Data Science/DATA SETS/Carseats.csv")
-View(carseats) # displays the data in a separate tab in RStudio
+head(carseats)
 ```
 
 ``` r
