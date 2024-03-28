@@ -2,7 +2,7 @@
 title: "Statistical Modeling"
 author: "Toheeb"
 date: "`r Sys.Date()`"
-output: html_document
+output: github_document
 ---
 
 # **Linear Regression**
@@ -14,7 +14,7 @@ The term was coined by Francis Glaton 1889 ("regression to mediocrity"). The ove
 
 Let's do some modeling!!!
 ```{r}
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS")
+setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 gannet <- read.csv("GannetDataCSV.csv")
 View(gannet)
 head(gannet)
@@ -114,7 +114,7 @@ matlines(xv, yv, lty = c(1,2,2), col = "red") # highlights the prediction interv
 # **Multiple Linear Regression**
 Ex: Predicting age at death of known statisticians
 ```{r}
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS")
+setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 statisticians <- read.csv("StatisticiansAgesCSV.csv")
 View(statisticians)
 head(statisticians)
@@ -235,7 +235,7 @@ NB: General Linear Model assumes the residuals/errors follow a normal distributi
 Testing the hypothesis that a coefficient on a predictor variable is different from zero at population level uses the "Wald statistic" (*z* in R). The Wald statistic is simply the square of the regular *t*-statistic. If the NH is true, then it has a particular distribution (the chi-square).
 
 ```{r}
-puffinbill <- read.csv("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS/puffinbill.csv")
+puffinbill <- read.csv("G:/My Drive/Programming/Data Science/DATA SETS/puffinbill.csv")
 View(puffinbill)
 head(puffinbill)
 # three columns:
@@ -292,7 +292,7 @@ logi.hist.plot(curlen, sexcode, boxp = FALSE, type = "count", col = "gray", xlab
 # **Polynomial Regression**
 
 ```{r}
-fluoride <- read.csv("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS/FlourideDMF.csv")
+fluoride <- read.csv("G:/My Drive/Programming/Data Science/DATA SETS/FlourideDMF.csv")
 View(fluoride)
 head(fluoride)
 ```
@@ -416,7 +416,7 @@ If there is a treatment effect, then one would expect the between-group variatio
 
 ## PRACTICE PROBLEM 
 ```{r}
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS")
+setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 fertData <- read.csv("FertiliserCSV.csv")
 View(fertData)
 ```
@@ -624,7 +624,7 @@ The ANCOVA is a GLM like the linear regression and ANOVA. However, whereas the t
 
 ## Practice 
 ```{r}
-leprosyCSV <- read.csv("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS/leprosyCSV.csv")
+leprosyCSV <- read.csv("G:/My Drive/Programming/Data Science/DATA SETS/leprosyCSV.csv")
 lep <- leprosyCSV
 View(lep)
 head(lep)
