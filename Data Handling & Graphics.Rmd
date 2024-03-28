@@ -9,7 +9,7 @@ output: github_document
 
 ## Reading data
 ```{r}
-carseats <- read.csv("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS/Carseats.csv")
+carseats <- read.csv("G:/My Drive/Programming/Data Science/DATA SETS/Carseats.csv")
 View(carseats) # displays the data in a separate tab in RStudio
 ```
 
@@ -17,7 +17,7 @@ View(carseats) # displays the data in a separate tab in RStudio
 age <- carseats$Age
 educ <- carseats$Education
 age_educ <- cbind(age, educ)
-write.table(age_educ, file = "C:/Users/tohaj/Box/Programming/Data Science/R Learning/Data Handling & Graphics/age_educ.csv") #this syntax stores the newly created data frame in specified format and location.
+write.table(age_educ, file = "G:/My Drive/Programming/Data Science/R Learning/Data Handling & Graphics/age_educ.csv") #this syntax stores the newly created data frame in specified format and location.
 ```
 
 
@@ -197,7 +197,7 @@ nrow(final_data)
 
 ## Combining data
 ```{r}
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS") # changes the working directory
+setwd("G:/My Drive/Programming/Data Science/DATA SETS") # changes the working directory
 getwd() #retrieves the current working directory
 owl_morph <- read.csv("owl.morphometrics.csv", header = TRUE)
 ```
@@ -228,7 +228,7 @@ plot(owl_morph$weight.g, owl_morph$wingspan.cm, xlab = "Owl weight (g)", ylab = 
 
 
 ```{r}
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS")
+setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 owl_clutch <- read.csv("owl.clutch.size.csv", header = TRUE)
 View(owl_clutch)
 any(is.na(owl_clutch))
@@ -256,7 +256,7 @@ plot(owl_morph_clutch$wingspan.cm, owl_morph_clutch$clutch.size,
 
 
 ```{r}
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS")
+setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 owl_lspan <- read.csv("owl.lifespan.csv", header = TRUE)
 View(owl_lspan)
 any(is.na(owl_lspan))
@@ -798,7 +798,7 @@ ggplot(mydata, aes(supp, len, fill = dose)) + geom_boxplot() + scale_fill_manual
 
 ## Creating Histograms and density plots using ggplot2 
 ```{r}
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS")
+setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 getwd()
 mydata <- read.csv("Mammal_lifehistories_v2.csv")
 names(mydata)
@@ -851,7 +851,7 @@ m2 + geom_histogram(binwidth = 0.7) + facet_grid(order ~ .)
 
 ## Creating scatterplots using ggplot2 
 ```{r}
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS")
+setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 co2data <- read.csv("canada.co2.by.sector.csv")
 names(co2data)
 nrow(co2data); dim(co2data)
@@ -951,7 +951,7 @@ top10_scatter
 
 ## Insetting Graphical Panels using ggplot2
 ```{r}
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS")
+setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 mydata <- read.csv("Mammal_lifehistories_v2.csv")
 names(mydata)
 ```
