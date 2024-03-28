@@ -8,7 +8,7 @@ Toheeb
 
 ``` r
 carseats <- read.csv("G:/My Drive/Programming/Data Science/DATA SETS/Carseats.csv")
-head(carseats)
+View(carseats) # displays data in a separate Rstudio window
 ```
 
 ``` r
