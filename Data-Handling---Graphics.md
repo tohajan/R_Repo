@@ -207,7 +207,7 @@ glimpse(my_data) # alternative to the str() function
     ## $ Day     <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,…
 
 ``` r
-my_data$Month <- factor(my_data$Month) # converts the Month var to factor type (coz the var is categorical)
+my_data$Month <- factor(my_data$Month) # converts the Month var to factor type (the variable is categorical)
 ```
 
 ``` r
@@ -244,7 +244,6 @@ idx <- identify(my_data$Ozone, my_data$Temp)
 ```
 
 The default labeling is row number. This can be changed as follows:
-
 ``` r
 plot(my_data$Ozone, my_data$Temp)
 idx <- identify(my_data$Ozone, my_data$Temp, labels = my_data$Month, plot = TRUE) # labels the data points with the corresponding month.
