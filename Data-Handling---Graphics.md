@@ -272,13 +272,12 @@ NaN = “not a number” (e.g., in cases where a math operation is performed on 
 Although there already are missing cases in the current data set, there could be more:
 ``` r
 my_data[154, ] <- c(NA) # adds another row all with NA values
-my_data[, 7] <- c(NA) # adds a new col all having NA values
+my_data[, 7] <- c(NA) # adds a new col, all having NA values
 head(my_data)
 ```
 
 ``` r
 View(is.na(my_data)) # checks for all NA values anywhere in the data set, returns table displaying TRUE/FALSE
-head(is.na(my_data))
 ```
 
 ``` r
@@ -322,6 +321,10 @@ sum(is.na(my_data$Solar.R)) # gives the no. of missing obs in a column
 ```
 
     ## [1] 7
+Alternatively:
+```r
+sum(is.na(my_data[,2]))
+```
 
 ``` r
 colSums(is.na(my_data)) # shows the distribution of missing cases across all columns
@@ -331,9 +334,8 @@ colSums(is.na(my_data)) # shows the distribution of missing cases across all col
     ##      37       7       0       0       0       0
 
 The rows of missing observations can be deleted as follows:
-
 ``` r
-clean_data <- na.omit(my_data) # generates a new data with all missing cases removed.
+clean_data <- na.omit(my_data) # generates a new data with all missing cases removed
 nrow(clean_data)
 ```
 
@@ -346,7 +348,6 @@ nrow(my_data)-nrow(clean_data) # gives the difference between the no. of rows in
     ## [1] 42
 
 Alternatively:
-
 ``` r
 clean_data2 <- my_data[complete.cases(my_data), ] # this code indexes only the rows with complete cases (no missing values)
 nrow(clean_data2)
@@ -354,9 +355,7 @@ nrow(clean_data2)
 
     ## [1] 111
 
-NB: These two approaches greatly reduce sample size. To preserve sample
-size, one may remove NA values only from variables to be used for
-analysis, e.g, if Ozone is not needed for analysis:
+NB: These two approaches greatly reduce sample size. To preserve sample size, one may remove NA values only from variables to be used for analysis, e.g, if Ozone is not needed for analysis:
 
 ``` r
 clean_data3 <- na.omit(my_data[-1]) # this removes the NA values from all but col 1 (Ozone)
@@ -366,14 +365,12 @@ nrow(clean_data3)
     ## [1] 146
 
 ``` r
-nrow(my_data)-nrow(clean_data3) # only 7 rows removed (as opposed to 42 rows deleted with the previous approach)
+nrow(my_data)-nrow(clean_data3) # only 7 rows removed (unlike 42 rows deleted with the previous approach)
 ```
 
     ## [1] 7
 
-In addition, missing values can be removed based on some predefined
-condition(s):
-
+In addition, missing values can be removed based on some predefined condition(s):
 ``` r
 clean_data4 <- my_data[, colSums(is.na(my_data)) < 10] # a new data containing only columns with less than 10 missing cases
 ```
@@ -386,10 +383,9 @@ nrow(final_data)
     ## [1] 146
 
 ## Combining data
-
 ``` r
 setwd("G:/My Drive/Programming/Data Science/DATA SETS") # changes the working directory
-getwd() #retrieves the current working directory
+getwd() #retrieves the current/new working directory
 ```
 
     ## [1] "G:/My Drive/Programming/Data Science/DATA SETS"
@@ -398,10 +394,7 @@ getwd() #retrieves the current working directory
 owl_morph <- read.csv("owl.morphometrics.csv", header = TRUE)
 ```
 
-NB: In an R Markdown document, changing the working directory affects
-only the host chunk, not entire script. That is, the directory resets
-after that chunk resets. E.g., compare the getwd() output of the chunk
-above and that of the next chunk:
+NB: In an R Markdown document, changing the working directory affects only the host chunk, not the entire global (as described earlier with plot functions). Hence, the directory resets after that chunk. E.g., compare the getwd() output of the chunk above and that of the next chunk:
 
 ``` r
 getwd()
@@ -409,9 +402,6 @@ getwd()
 
     ## [1] "C:/Users/tohaj/Desktop/R_Projects"
 
-``` r
-#retrieves the current working directory
-```
 
 ``` r
 summary(owl_morph)
@@ -454,9 +444,7 @@ str(owl_morph)
 owl_morph$common.name <- as.factor(owl_morph$common.name)
 owl_morph$latin <- as.factor(owl_morph$latin)
 ```
-
-Both columns have now been changed to factor (i.e., categorical
-variables)
+Both columns have now been changed to factor (i.e., categorical variables)
 
 ``` r
 plot(owl_morph$weight.g, owl_morph$wingspan.cm, xlab = "Owl weight (g)", ylab = "Owl wingspan (cm)")
@@ -473,8 +461,7 @@ any(is.na(owl_clutch))
 
     ## [1] FALSE
 
-Since the two datasets have the same contents in row 1 (common.name)
-orderly arranged, they can be combined using the cbind function:
+Since the two datasets have the same contents in col 1 (common.name) and are orderly arranged by the column, they can be combined using the cbind function:
 
 ``` r
 owl_morph_clutch <- cbind(owl_morph, owl_clutch)
