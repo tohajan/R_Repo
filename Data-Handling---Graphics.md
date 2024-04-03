@@ -231,42 +231,31 @@ levels(my_data$Month) # lists the categories in the Month column
     ## [1] "May"  "June" "July" "Aug"  "Sept"
 
 ## Plotting data
-
+NB to self: the following codes are only for ref purposes. They do not work in an .Rmd doc, but they work in an IDE.
 ``` r
-plot(my_data$Ozone, my_data$Temp)
-idx <- identify(my_data$Ozone, my_data$Temp)
+# plot(my_data$Ozone, my_data$Temp)
+# idx <- identify(my_data$Ozone, my_data$Temp)
 ```
-
-![](Data-Handling---Graphics_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
-
-``` r
-# this syntax allows to click on specific points on the graph.
-```
+The above syntax allows to click on specific points on the graph. \
 
 The default labeling is row number. This can be changed as follows:
 ``` r
-plot(my_data$Ozone, my_data$Temp)
-idx <- identify(my_data$Ozone, my_data$Temp, labels = my_data$Month, plot = TRUE) # labels the data points with the corresponding month.
+# plot(my_data$Ozone, my_data$Temp) # NB: in R md, a plot function is local, not global. i.e., it does not translate from one chunk to the next, so the plot of interest must be recreated in every code chunk 
+# idx <- identify(my_data$Ozone, my_data$Temp, labels = my_data$Month, plot = TRUE) # labels the data points with the corresponding month.
 ```
-
-![](Data-Handling---Graphics_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 Even better:
 
 ``` r
-plot(my_data$Ozone, my_data$Temp)
-idx <- identify(my_data$Ozone, my_data$Temp, labels = paste(as.character(my_data$Day),
-                      "-", as.character(my_data$Month)), plot = TRUE)
+# plot(my_data$Ozone, my_data$Temp)
+# idx <- identify(my_data$Ozone, my_data$Temp, labels = paste(as.character(my_data$Day),
+#                      "-", as.character(my_data$Month)), plot = TRUE)
 ```
 
-![](Data-Handling---Graphics_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+PS: as stated earlier, all the codes above (on plot labeling) don’t work in R Markdown. They only work in an IDE, e.g., RStudio.
 
-PS: all the codes above (on plot labeling) don’t work in R Markdown. But
-they work in a normal R script (in a basic R environment)
-
-Get the number of observations in each level/category of a var. For
-example, the variable Month:
-
+Moving on... \
+Get the number of observations in each level/category of a var. For example, the variable Month:
 ``` r
 xtabs(~Month, my_data) 
 ```
@@ -275,23 +264,21 @@ xtabs(~Month, my_data)
     ##  May June July  Aug Sept 
     ##   31   30   31   31   30
 
+
 ## Dealing with NA’s (missing values)
+NA indicates a missing case/obs  \
+NaN = “not a number” (e.g., in cases where a math operation is performed on a non-numeric var) \
 
-NA indicates a missing case/obs  
-NaN = “not a number” (e.g., in cases where a math operation is ran on a
-non-numeric var)
-
-Although there already are missing cases in the current data set, one
-could throw in more:
-
+Although there already are missing cases in the current data set, there could be more:
 ``` r
 my_data[154, ] <- c(NA) # adds another row all with NA values
 my_data[, 7] <- c(NA) # adds a new col all having NA values
-View (my_data)
+head(my_data)
 ```
 
 ``` r
 View(is.na(my_data)) # checks for all NA values anywhere in the data set, returns table displaying TRUE/FALSE
+head(is.na(my_data))
 ```
 
 ``` r
