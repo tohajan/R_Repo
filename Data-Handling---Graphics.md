@@ -254,6 +254,7 @@ Even better:
 
 PS: as stated earlier, all the codes above (on plot labeling) don’t work in R Markdown. They only work in an IDE, e.g., RStudio.
 
+Moving on... \
 Get the number of observations in each level/category of a var. For example, the variable Month:
 ``` r
 xtabs(~Month, my_data) 
@@ -265,21 +266,19 @@ xtabs(~Month, my_data)
 
 
 ## Dealing with NA’s (missing values)
-NA indicates a missing case/obs  
-NaN = “not a number” (e.g., in cases where a math operation is ran on a
-non-numeric var)
+NA indicates a missing case/obs  \
+NaN = “not a number” (e.g., in cases where a math operation is performed on a non-numeric var) \
 
-Although there already are missing cases in the current data set, one
-could throw in more:
-
+Although there already are missing cases in the current data set, there could be more:
 ``` r
 my_data[154, ] <- c(NA) # adds another row all with NA values
 my_data[, 7] <- c(NA) # adds a new col all having NA values
-View (my_data)
+head(my_data)
 ```
 
 ``` r
 View(is.na(my_data)) # checks for all NA values anywhere in the data set, returns table displaying TRUE/FALSE
+head(is.na(my_data))
 ```
 
 ``` r
