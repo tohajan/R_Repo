@@ -2,7 +2,7 @@
 #' TITLE: "Data Handling & ggplot"
 #' author: "Toheeb"
 #' 
-#---- **PART 1** ----
+#* **PART 1** 
 # Reading data
 carseats <- read.csv("G:/My Drive/Programming/Data Science/DATA SETS/Carseats.csv")
 View(carseats) # displays the data in a separate tab in RStudio
@@ -15,6 +15,7 @@ write.table(age_educ, file = "G:/My Drive/Programming/Data Science/R Learning/Da
 # the newly created data frame is stored as defined (file location and extension).
 #' 
 #' 
+## -----------------------------------------------------------------------------
 #' ## Exploring Data
 my_data <- airquality # "airquality" is a built-in data set in R.
 View(my_data)
@@ -46,131 +47,86 @@ glimpse(my_data)
 #' glimpse (a function in the dplyr library) produces outputs similar to the str() function 
 #' used above.
 
-## -----------------------------------------------------------------------------
+#' Converting a categorical var:
 my_data$Month <- factor(my_data$Month) 
 # converts the Month var to factor type (the var is categorical)
 
-glimpse(my_data)
+glimpse(my_data) # Note: in the output, Month var is now labelled 'fct' (factor)
 levels(my_data$Month) <- list(May = "5", June = "6", July = "7", Aug = "8", Sept = "9") # labels the values/levels of the Month var
 levels(my_data$Month) # lists the categories in the Month column
 
 #' 
 #' 
-#' 
-#' 
-#' 
+## -----------------------------------------------------------------------------
 #' ## Plotting data
-## -----------------------------------------------------------------------------------------------------------------
 plot(my_data$Ozone, my_data$Temp)
 idx <- identify(my_data$Ozone, my_data$Temp)
 # this syntax allows to click on specific points on the graph.
+#' The default labeling is row number. This can be modified as follows:
+idx <- identify(my_data$Ozone, my_data$Temp, labels = my_data$Month, plot = TRUE) # labels the data points with the corresponding month name.
 
-#' 
-#' The default labeling is row number. This can be changed as follows:
-## -----------------------------------------------------------------------------------------------------------------
-plot(my_data$Ozone, my_data$Temp)
-idx <- identify(my_data$Ozone, my_data$Temp, labels = my_data$Month, plot = TRUE) # labels the data points with the corresponding month.
-
-#' 
 #' Even better:
-## -----------------------------------------------------------------------------------------------------------------
-plot(my_data$Ozone, my_data$Temp)
 idx <- identify(my_data$Ozone, my_data$Temp, labels = paste(as.character(my_data$Day),
                       "-", as.character(my_data$Month)), plot = TRUE)
-
 #' 
-#' 
-#' PS: all the codes above (on plot labeling) don't work in R Markdown. But they work in a normal R script (in a basic R environment)
-#' 
-#' 
-#' Get the number of observations in each level/category of a var. For example, the variable Month:
-## -----------------------------------------------------------------------------------------------------------------
+#' More operations:
+#' To check the frequency of specific values in a var/col. For example, the variable Month:
 xtabs(~Month, my_data) 
 
 #' 
-#' 
-#' 
+## -----------------------------------------------------------------------------
 #' ## Dealing with NA's (missing values) 
 #' NA indicates a missing case/obs \
 #' NaN = "not a number" (e.g., in cases where a math operation is ran on a non-numeric var)
-#' 
-#' Although there already are missing cases in the current data set, one could throw in more:
-## -----------------------------------------------------------------------------------------------------------------
-my_data[154, ] <- c(NA) # adds another row all with NA values
-my_data[, 7] <- c(NA) # adds a new col all having NA values
+#' #' Although there already are missing cases in the current data set, one could throw in more:
+my_data[154, ] <- c(NA) # adds another row, with all cells having NA values
+my_data[, 7] <- c(NA) # adds a new col, all cells having NA values
 View (my_data)
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-View(is.na(my_data)) # checks for all NA values anywhere in the data set, returns table displaying TRUE/FALSE
+View(is.na(my_data)) # checks for all NA values anywhere in the data set; returns a table of 
+# logical (TRUE/FALSE) values
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 any(is.na(my_data)) # returns TRUE if at least one missing case exists in the data
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-all(is.na(my_data)) # checks if all entries in the specified object (i.e., the entire dataset) are missing values
+all(is.na(my_data)) # checks if all entries in the specified object (i.e., the entire dataset) 
+# are missing values
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 all(is.na(my_data[,7])) # checks if all entries in the specified column are missing values
 
-#' 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 # The recently added row and column contain only missing cases, so they can be removed:
 my_data <- my_data[-7] # removes the last column (no. 7)
 my_data <- my_data[-154, ] # removes the last row (no. 154)
 
-#' 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-any(is.na(my_data)) # rechecks for missing cases
+any(is.na(my_data)) # checks again for ANY missing cases
 sum(is.na(my_data)) # gives the total no. of missing obs in the entire data set
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-sum(is.na(my_data$Solar.R)) # gives the no. of missing obs in a column
+sum(is.na(my_data$Solar.R)) # gives the no. of missing obs in the specified column
 
-#' 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 colSums(is.na(my_data)) # shows the distribution of missing cases across all columns
 
-#' 
 #' The rows of missing observations can be deleted as follows:
-## -----------------------------------------------------------------------------------------------------------------
 clean_data <- na.omit(my_data) # generates a new data with all missing cases removed.
 nrow(clean_data)
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-nrow(my_data)-nrow(clean_data) # gives the difference between the no. of rows in the original data and the # rows in the cleaned data (i.e., no. of missing obs rows deleted)
+nrow(my_data)-nrow(clean_data) # gives the difference between the no. of rows in the original 
+# data and the np. of rows in the cleaned data (i.e., no. of missing obs/rows deleted)
 
-#' 
 #' Alternatively:
-## -----------------------------------------------------------------------------------------------------------------
 clean_data2 <- my_data[complete.cases(my_data), ] # this code indexes only the rows with complete cases (no missing values)
 nrow(clean_data2)
 
-#' 
-#' NB: These two approaches greatly reduce sample size. To preserve sample size, one may remove NA values only from variables to be used for analysis, e.g, if Ozone is not needed for analysis:
-## -----------------------------------------------------------------------------------------------------------------
+#' NB: These two approaches greatly reduce sample size. To preserve sample size, remove NA 
+#' values only from variables of interest. E.g, if Ozone is not needed for analysis:
 clean_data3 <- na.omit(my_data[-1]) # this removes the NA values from all but col 1 (Ozone)
 nrow(clean_data3)
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-nrow(my_data)-nrow(clean_data3) # only 7 rows removed (as opposed to 42 rows deleted with the previous approach)
+nrow(my_data)-nrow(clean_data3) 
+# only 7 rows removed (as opposed to 42 rows deleted in the previous approaches)
 
-#' 
-#' In addition, missing values can be removed based on some predefined condition(s):
-## -----------------------------------------------------------------------------------------------------------------
+#' Also, missing values can be removed based on some predefined condition(s):
 clean_data4 <- my_data[, colSums(is.na(my_data)) < 10] # a new data containing only columns with less than 10 missing cases
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
+#' next, rows missing cases are then removed from the new data:
 final_data <- na.omit(clean_data4)
 nrow(final_data)
 
@@ -178,93 +134,66 @@ nrow(final_data)
 #' 
 #' 
 #' 
-#' 
-#' 
-#' 
-#' 
+## -----------------------------------------------------------------------------
 #' ## Combining data
-## -----------------------------------------------------------------------------------------------------------------
 setwd("G:/My Drive/Programming/Data Science/DATA SETS") # changes the working directory
 getwd() #retrieves the current working directory
 owl_morph <- read.csv("owl.morphometrics.csv", header = TRUE)
 
-#' 
-#' NB: In an R Markdown document, changing the working directory affects only the host 
-#' chunk, not entire script. That is, the directory resets after that chunk resets. E.g., compare the getwd() output of the chunk above and that of the next chunk:
-## -----------------------------------------------------------------------------------------------------------------
-getwd()
-#retrieves the current working directory
-
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 summary(owl_morph)
 View(owl_morph)
 any(is.na(owl_morph))
 str(owl_morph)
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 owl_morph$common.name <- as.factor(owl_morph$common.name)
 owl_morph$latin <- as.factor(owl_morph$latin)
-
-#' 
 #' Both columns have now been changed to factor (i.e., categorical variables)
-#' 
-## -----------------------------------------------------------------------------------------------------------------
+
 plot(owl_morph$weight.g, owl_morph$wingspan.cm, xlab = "Owl weight (g)", ylab = "Owl wingspan (cm)")
 
 #' 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 owl_clutch <- read.csv("owl.clutch.size.csv", header = TRUE)
 View(owl_clutch)
 any(is.na(owl_clutch))
 
-#' 
-#' Since the two datasets have the same contents in row 1 (common.name) orderly arranged, they can be combined using the cbind function:
-## -----------------------------------------------------------------------------------------------------------------
+#' Since the two data sets have the same contents in row 1 (common.name) orderly arranged, 
+#' they can be combined using the cbind function:
 owl_morph_clutch <- cbind(owl_morph, owl_clutch)
 View(owl_morph_clutch)
 
-#' 
-#' NB: The combination syntax above leads to duplication of the "common name row". This can be avoided:
-## -----------------------------------------------------------------------------------------------------------------
-owl_morph_clutch <- cbind(owl_morph, owl_clutch[, 2]) # only the row 2 of the second data is called upon for the combination
+#' NB: The combination syntax above leads to duplication of the "common name row". To avoid this:
+owl_morph_clutch <- cbind(owl_morph, owl_clutch[, 2]) # here, only the 2nd col of the second data is used in the combination
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 names(owl_morph_clutch)[6] <- "clutch.size" # renames the newly added column
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
+#' plot a graph of clutch size vs wing span
 plot(owl_morph_clutch$wingspan.cm, owl_morph_clutch$clutch.size,
      xlab = "Owl wing span (cm)", ylab = "Owl clutch size (??)")
 
 #' 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 owl_lspan <- read.csv("owl.lifespan.csv", header = TRUE)
 View(owl_lspan)
 any(is.na(owl_lspan))
-
 #' 
-#' This new data has one NA, and the identifying row (common.name) is not arranged alphabetically. To combine it with the recent combined data, use the merge() function and specify the column to be used for combination
-## -----------------------------------------------------------------------------------------------------------------
+#' This new data has one NA, and the identifying row (common.name) is not arranged alphabetically. 
+#' To combine it with the recently combined data, use the merge() function and specify the key
+#' column (i.e., to be used in the combination)
 owl_morph_clutch_life <- merge(owl_morph_clutch, owl_lspan, key = "common.name")
 View(owl_morph_clutch_life)
 
 #' 
 #' 
-#' # **PART 2**
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+#* **PART 2**
 #' 
 #' ## The apply() Family of Functions 
-#' 
-#' ### 1. apply() 
-#' It has the general structure: apply(object, margin, function...); the object is usually a matrix or an array.\
-#' Consider the ffg example:
-## -----------------------------------------------------------------------------------------------------------------
+#' 1. apply() 
+#' It has the general structure: apply(object, margin, function...); the object is usually a 
+#' matrix or an array. Consider the ffg example:
 duckweed_mat <- matrix(c(10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 10, 30, 50, 80, 100, 150, 200,
                          250, 270, 300, 10, 30, 36, 80, 96, 106, 110, 130, 136, 144, 10, 15, 30,
                          50, 70, 86, 95, 100, 105, 190, 10, 40, 50, 65, 78, 96, 107, 120, 144,
@@ -272,42 +201,30 @@ duckweed_mat <- matrix(c(10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 10, 30, 50, 80
                        nrow = 10, byrow = FALSE)
 rownames(duckweed_mat) <- c("Day1", "Day2", "Day3", "Day4", "Day5", "Day6", "Day7", 
                             "Day8", "Day9", "Day10")
-
 colnames(duckweed_mat) <- c("R1", "R2", "R3", "R4", "R5", "R6")
 duckweed_mat
 class(duckweed_mat)
-
 #' 
-#' Say we want to check the maximum number of leaves recorded each day, i,e, per row:
-## -----------------------------------------------------------------------------------------------------------------
+#' E.g., check the maximum number of leaves recorded each day, i,e, per row:
 max(duckweed_mat[1,])
 max(duckweed_mat[2,])
 max(duckweed_mat[3,])
-
-#' ...and so on.\
-#' Alternatively, one could use a FOR loop:
-## -----------------------------------------------------------------------------------------------------------------
+#' ...and so on.
+#' Alternatively, a FOR loop could be useful:
 for (i in 1:10) {
   row <- duckweed_mat[i, ]
   max <- max(row)
   print(max)
 }
-
 #' 
-#' All this is done better with the apply() function:
-## -----------------------------------------------------------------------------------------------------------------
+#' All the above is done better with the apply() function:
 apply(duckweed_mat, 1, max) # returns the maximum value in each row
 #NB: the 2nd argument is the margin -- 1 represents row; 2 implies column
-
 #' 
-#' Could do the same column-wise
-## -----------------------------------------------------------------------------------------------------------------
-apply(duckweed_mat, 2, max)
-# this prints out the maximum value in each column
+#' Same function, but along column-wise:
+apply(duckweed_mat, 2, max) # this prints out the maximum value in each column
 
-#' 
 #' The apply() function also works for data frames:
-## -----------------------------------------------------------------------------------------------------------------
 duckweed_df <- data.frame(R1 = c(10, 20, 30, 40, 50, 60, 70, 80, 90, 100),
                           R2 = c(10, 30, 50, 80, 100, 150, 200, 250, 270, 300),
                           R3 = c(10, 30, 36, 80, 96, 106, 110, 130, 136, 144),
@@ -316,30 +233,21 @@ duckweed_df <- data.frame(R1 = c(10, 20, 30, 40, 50, 60, 70, 80, 90, 100),
                           R6 = c(10, 30, 57, 98, 106, 130, 160, 177, 189, 198))
 class(duckweed_df)
 
-#' To calculate the means by row
-## -----------------------------------------------------------------------------------------------------------------
+#' calculate the means per row:
 rowMeans(duckweed_df)
-
 #' 
 #' Using the apply() function:
-## -----------------------------------------------------------------------------------------------------------------
 apply(duckweed_df, 1, mean)
-
 #' 
 #' However, unlike matrices and arrays, a data frame can contain non-numeric elements:
-## -----------------------------------------------------------------------------------------------------------------
 duckweed_df$Day <- as.factor(1:10)
 (duckweed_df)
-
-#' 
-#' NB: although the newly added column contains values 1 to 10, these values have been assigned as non-numeric (factor)
-## -----------------------------------------------------------------------------------------------------------------
-duckweed_df <- duckweed_df[, c(7, 1:6)] # rearranges the data so that the new column comes 1st
+#' NB: although the newly added column contains values 1 to 10, these values have been assigned 
+#' non-numeric (factor)
+duckweed_df <- duckweed_df[, c(7, 1:6)] # rearranges the data so that the new column comes first
 class(duckweed_df$Day) # check that the column is correctly identified as factor 
-
 #' 
 #' Now using the apply function again:
-## -----------------------------------------------------------------------------------------------------------------
 apply(duckweed_df, 1, mean)
 
 #' 
