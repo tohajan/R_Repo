@@ -1,68 +1,55 @@
 #' ---
-#' title: "Data Handling & ggplot"
+#' TITLE: "Data Handling & ggplot"
 #' author: "Toheeb"
-#' date: "`r Sys.Date()`"
-#' output: html_document
-#' ---
 #' 
-#' # **PART 1**
-#' 
-#' ## Reading data
-## -----------------------------------------------------------------------------------------------------------------
-carseats <- read.csv("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS/Carseats.csv")
+#---- **PART 1** ----
+# Reading data
+carseats <- read.csv("G:/My Drive/Programming/Data Science/DATA SETS/Carseats.csv")
 View(carseats) # displays the data in a separate tab in RStudio
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
+# Creating new data from existing data
 age <- carseats$Age
 educ <- carseats$Education
 age_educ <- cbind(age, educ)
-write.table(age_educ, file = "C:/Users/tohaj/Box/Programming/Data Science/R Learning/Data Handling & Graphics/age_educ.csv") #this syntax stores the newly created data frame in specified format and location.
-
-#' 
+write.table(age_educ, file = "G:/My Drive/Programming/Data Science/R Learning/Data Handling & Graphics/age_educ.csv") 
+# the newly created data frame is stored as defined (file location and extension).
 #' 
 #' 
 #' ## Exploring Data
-## -----------------------------------------------------------------------------------------------------------------
-my_data <- airquality # "airquality" is a data set readily available in R database.
+my_data <- airquality # "airquality" is a built-in data set in R.
+View(my_data)
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-head(my_data) # prints the first 6 elements of the data
+#' Retrieving sections of data
+head(my_data) # prints the first 6 elements (rows) of the data
 head(my_data, n = 4) # first 4 rows
 head(my_data, n = -10) # all but the last 10
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 tail(my_data)# last 6
 tail(my_data, n = 12) # last 12
 tail(my_data, n = -20) # all but the first 20
 
-#' 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-class(my_data) # tells the class/type of the object (here it is a data frame)
+#' some other applicable functions
+class(my_data) # tells the class/type of the object (here it is a data frame - df)
 length(my_data) # length of the object (i.e., no. of cols in the df)
 ncol(my_data) # same as above
 nrow(my_data) # no. of rows
 names(my_data) # names of columns
-rownames(my_data) # index names (rows)
-str(my_data) # gives a brief overview of the df, including data type and entries
-summary(my_data) # gives summary statistics (mean, median, min, etc.) for each column
+rownames(my_data) # index names (i.e., row names)
+str(my_data) #' gives a brief overview of the data frame (its dimension, data type and first 
+# few values in each column/variable
+dim(my_data) #gives the df's dimension (i.e., no. of rows and columns in the data)
+summary(my_data) # gives summary statistics (mean, median, min, etc.) for each numeric column.
+# The function does not apply to character/alphabetical variables.
 
-#' 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 library("dplyr")
-glimpse(my_data) # alternative to the str() function
+glimpse(my_data) 
+#' glimpse (a function in the dplyr library) produces outputs similar to the str() function 
+#' used above.
 
-#' 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-my_data$Month <- factor(my_data$Month) # converts the Month var to factor type (coz the var is categorical)
+## -----------------------------------------------------------------------------
+my_data$Month <- factor(my_data$Month) 
+# converts the Month var to factor type (the var is categorical)
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 glimpse(my_data)
 levels(my_data$Month) <- list(May = "5", June = "6", July = "7", Aug = "8", Sept = "9") # labels the values/levels of the Month var
 levels(my_data$Month) # lists the categories in the Month column
@@ -197,12 +184,13 @@ nrow(final_data)
 #' 
 #' ## Combining data
 ## -----------------------------------------------------------------------------------------------------------------
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS") # changes the working directory
+setwd("G:/My Drive/Programming/Data Science/DATA SETS") # changes the working directory
 getwd() #retrieves the current working directory
 owl_morph <- read.csv("owl.morphometrics.csv", header = TRUE)
 
 #' 
-#' NB: In an R Markdown document, changing the working directory affects only the host chunk, not entire script. That is, the directory resets after that chunk resets. E.g., compare the getwd() output of the chunk above and that of the next chunk:
+#' NB: In an R Markdown document, changing the working directory affects only the host 
+#' chunk, not entire script. That is, the directory resets after that chunk resets. E.g., compare the getwd() output of the chunk above and that of the next chunk:
 ## -----------------------------------------------------------------------------------------------------------------
 getwd()
 #retrieves the current working directory
@@ -228,7 +216,7 @@ plot(owl_morph$weight.g, owl_morph$wingspan.cm, xlab = "Owl weight (g)", ylab = 
 #' 
 #' 
 ## -----------------------------------------------------------------------------------------------------------------
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS")
+setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 owl_clutch <- read.csv("owl.clutch.size.csv", header = TRUE)
 View(owl_clutch)
 any(is.na(owl_clutch))
@@ -256,7 +244,7 @@ plot(owl_morph_clutch$wingspan.cm, owl_morph_clutch$clutch.size,
 #' 
 #' 
 ## -----------------------------------------------------------------------------------------------------------------
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS")
+setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 owl_lspan <- read.csv("owl.lifespan.csv", header = TRUE)
 View(owl_lspan)
 any(is.na(owl_lspan))
@@ -375,7 +363,8 @@ apply(duckweed_df[, -1], 1, mean, na.rm = TRUE) # na.rm "removes" the missing va
 
 #' 
 #' #### Using customized functions
-#' The examples thus far have used a built-in R function (i.e., mean). But customized functions can also be used. For example, one may be interested in calculating, for each plant, the no. of leaves counted each day as a  proportion of the total no. of leaves (i.e, the count on the 10th day) for that plant:
+#' The examples thus far have used a built-in R function (i.e., mean). But customized 
+#' functions can also be used. For example, one may be interested in calculating, for each plant, the no. of leaves counted each day as a  proportion of the total no. of leaves (i.e, the count on the 10th day) for that plant:
 ## -----------------------------------------------------------------------------------------------------------------
 prop <- function(x) {
   x / max(x)
@@ -441,7 +430,10 @@ nchar(random)
 #' 
 #' 
 #' ### 3. sapply()
-#' --> It has the same general structure as lapply() and also applies to lists, vectors, and data frames. However, outputs are returned in a simplified format if possible (vector, matrix, or list). In addition, as in lapply(), sapply() has no margin argument.
+#' --> It has the same general structure as lapply() and also applies to lists, vectors, 
+#' and data frames. However, outputs are returned in a simplified format if possible 
+#' (vector, matrix, or list). In addition, as in lapply(), sapply() has no margin 
+#' argument.
 ## -----------------------------------------------------------------------------------------------------------------
 cago_list
 sapply(cago_list, mean) # results are in a vector format
@@ -798,7 +790,7 @@ ggplot(mydata, aes(supp, len, fill = dose)) + geom_boxplot() + scale_fill_manual
 #' 
 #' ## Creating Histograms and density plots using ggplot2 
 ## -----------------------------------------------------------------------------------------------------------------
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS")
+setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 getwd()
 mydata <- read.csv("Mammal_lifehistories_v2.csv")
 names(mydata)
@@ -851,7 +843,7 @@ m2 + geom_histogram(binwidth = 0.7) + facet_grid(order ~ .)
 #' 
 #' ## Creating scatterplots using ggplot2 
 ## -----------------------------------------------------------------------------------------------------------------
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS")
+setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 co2data <- read.csv("canada.co2.by.sector.csv")
 names(co2data)
 nrow(co2data); dim(co2data)
@@ -951,7 +943,7 @@ top10_scatter
 #' 
 #' ## Insetting Graphical Panels using ggplot2
 ## -----------------------------------------------------------------------------------------------------------------
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS")
+setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 mydata <- read.csv("Mammal_lifehistories_v2.csv")
 names(mydata)
 
