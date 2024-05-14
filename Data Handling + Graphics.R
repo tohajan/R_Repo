@@ -133,7 +133,6 @@ nrow(final_data)
 #' 
 #' 
 #' 
-#' 
 ## -----------------------------------------------------------------------------
 #' ## Combining data
 setwd("G:/My Drive/Programming/Data Science/DATA SETS") # changes the working directory
@@ -221,10 +220,10 @@ for (i in 1:10) {
 apply(duckweed_mat, 1, max) # returns the maximum value in each row
 #NB: the 2nd argument is the margin -- 1 represents row; 2 implies column
 #' 
-#' Same function, but along column-wise:
+#' Same function, but along the columns:
 apply(duckweed_mat, 2, max) # this prints out the maximum value in each column
 
-#' The apply() function also works for data frames:
+#' The apply() function also works on data frames:
 duckweed_df <- data.frame(R1 = c(10, 20, 30, 40, 50, 60, 70, 80, 90, 100),
                           R2 = c(10, 30, 50, 80, 100, 150, 200, 250, 270, 300),
                           R3 = c(10, 30, 36, 80, 96, 106, 110, 130, 136, 144),
@@ -243,7 +242,7 @@ apply(duckweed_df, 1, mean)
 duckweed_df$Day <- as.factor(1:10)
 (duckweed_df)
 #' NB: although the newly added column contains values 1 to 10, these values have been assigned 
-#' non-numeric (factor)
+#' non-numeric type (factor)
 duckweed_df <- duckweed_df[, c(7, 1:6)] # rearranges the data so that the new column comes first
 class(duckweed_df$Day) # check that the column is correctly identified as factor 
 #' 
@@ -251,49 +250,53 @@ class(duckweed_df$Day) # check that the column is correctly identified as factor
 apply(duckweed_df, 1, mean)
 
 #' 
-#' NB: the above returns an error message ("Warning: argument is not numeric or logical: returning NA") because each row now has a factor, a data type that is not receptive to arithmetic operations.
-## -----------------------------------------------------------------------------------------------------------------
+#' NB: the above returns an error message ("Warning: argument is not numeric or logical: 
+#' returning NA") because each row now has a factor, a data type that is not receptive to 
+#' arithmetic operations.
 apply(duckweed_df[, 2:7], 1, mean) # the non-numeric column is now excluded
-apply(duckweed_df[, -1], 1, mean) # can also be excluded this way
+apply(duckweed_df[, -1], 1, mean) # the column can also be excluded this way
 apply(duckweed_df[, -c(1,2,4,6)], 1, mean) # can also exclude several columns
 
 #' 
-#' Throw a missing observation into the mix:
-## -----------------------------------------------------------------------------------------------------------------
+#' Throw in a missing value:
 duckweed_df[6, 5] <- NA
 (duckweed_df)
 apply(duckweed_df[, -1], 1, mean)
 
 #' 
-#' NB: Now that there is a missing value in a row, that row returns a mean of "NA". If that specific cell is not of interest, one could instruct R to ignore it and compute the mean for only the non-missing values in that row:
-## -----------------------------------------------------------------------------------------------------------------
-apply(duckweed_df[, -1], 1, mean, na.rm = TRUE) # na.rm "removes" the missing value(s) from the calculation
+#' NB: Now that there is a missing value in a row, that row returns a mean of "NA". If that 
+#' specific cell is not of interest, one could instruct R to ignore it and compute the mean 
+#' for only the non-missing values in that row:
+apply(duckweed_df[, -1], 1, mean, na.rm = TRUE) 
+# na.rm ignores the missing value(s) during the operation
 
 #' 
-#' #### Using customized functions
-#' The examples thus far have used a built-in R function (i.e., mean). But customized 
-#' functions can also be used. For example, one may be interested in calculating, for each plant, the no. of leaves counted each day as a  proportion of the total no. of leaves (i.e, the count on the 10th day) for that plant:
 ## -----------------------------------------------------------------------------------------------------------------
+#' ## Using customized functions
+#' The examples thus far have used a built-in R function (i.e., mean). But customized 
+#' functions can also be used. For example, one may be interested in calculating, for each plant, 
+#' the no. of leaves counted each day as a  proportion of the total no. of leaves (i.e, the 
+#' count on the 10th day) for that plant:
 prop <- function(x) {
   x / max(x)
 }
 
-#' 
 #' Using the matrix data:
-## -----------------------------------------------------------------------------------------------------------------
 (duckweed_mat)
 apply(duckweed_mat, 2, prop)
-
+#' Note that the calculation is per column, hence the margin argument is set to "2".
+#' Basically, the apply() function takes each column as a vector and each cell as an element in 
+#' the column vector.
 #' 
-#' Note that the calculation is per column, hence the margin argument is set to "2". \
-#' Basically, the apply() function takes each column as a vector and each cell as an element in that vector.
 #' 
-#' ### 2. lapply()
-#' General structure: lapply(object, function, ...) \
-#' -> the "object" could be vector, list, or data frame. \
-#' -> lapply() returns only list outputs. \
-#' Example - Below is an hypothetical data on the clutch sizes of Canada geese under 4 different diet regimes, with 10 replicates in each diet group:
-## -----------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+#' 2. lapply()
+#' General structure: lapply(object, function, ...)
+#' -> the "object" could be vector, list, or data frame.
+#' -> lapply() returns only list outputs.
+#' Example - Below is an hypothetical data on the clutch sizes of Canada geese under 4 different 
+#' diet regimes, with 10 replicates in each diet group:
 cago_list <- list(Diet1 = c(2, 5, 4, 5, 3, 5, 4, 4, 4, 5),
                   Diet2 = c(8, 5, 6, 5, 7, 7, 6, 8, 8, 3),
                   Diet3 = c(3, 4, 2, 5, 2, 6, 5, 6, 2, 4),
@@ -302,129 +305,99 @@ class(cago_list)
 (cago_list)
 
 #' 
-#' Use the lapply() function on the data:
-## -----------------------------------------------------------------------------------------------------------------
 lapply(cago_list, mean)
-
-#' 
 #' NB: each row is a vector, and the mean is thus returned per vector (i.e., diet).
-#' 
 #' The same data could be stored in a data frame instead:
-## -----------------------------------------------------------------------------------------------------------------
 cago_df <- data.frame(Diet1 = c(2, 5, 4, 5, 3, 5, 4, 4, 4, 5),
                   Diet2 = c(8, 5, 6, 5, 7, 7, 6, 8, 8, 3),
                   Diet3 = c(3, 4, 2, 5, 2, 6, 5, 6, 2, 4),
                   Diet4 = c(2, 2, 3, 2, 5, 2, 4, 3, 5, 7))
 lapply(cago_df, mean)
-
-#' 
-#' Again, using the lapply returns the output in a list format. There is also no margin argument, unlike apply(). \
+#' Again, using the lapply returns the output in a list format. There is also no margin argument, 
+#' unlike apply(). \
 #' 
 #' A vector example:
-## -----------------------------------------------------------------------------------------------------------------
 random <- c("This", "is", "a", "random", "vector")
-
-#' 
 #' The no. of letters in each of the words contained in the vector can be determined as follows:
-## -----------------------------------------------------------------------------------------------------------------
 lapply(random, nchar)
-
-#' 
 #' NB -- unlike the lapply() function, the following syntax returns an output in a vector format:
-## -----------------------------------------------------------------------------------------------------------------
 nchar(random)
 
 #' 
 #' 
-#' 
-#' ### 3. sapply()
-#' --> It has the same general structure as lapply() and also applies to lists, vectors, 
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+#' 3. sapply()
+#' It has the same general structure as lapply() and also applies to lists, vectors, 
 #' and data frames. However, outputs are returned in a simplified format if possible 
-#' (vector, matrix, or list). In addition, as in lapply(), sapply() has no margin 
-#' argument.
-## -----------------------------------------------------------------------------------------------------------------
+#' (vector, matrix, or list). In addition, as in lapply(), sapply() has no margin argument.
 cago_list
 sapply(cago_list, mean) # results are in a vector format
-
 #' 
-## -----------------------------------------------------------------------------------------------------------------
 cago_df
 sapply(cago_df, mean) # results also in vector format
-
 #' 
-## -----------------------------------------------------------------------------------------------------------------
 random
 sapply(random, nchar)
 
-#' 
-#' Sometimes, the output could not be simplified to a vector or matrix:
-## -----------------------------------------------------------------------------------------------------------------
+#' Sometimes the output cannot be simplified to a vector or matrix:
 sequence <- function(x) {
   seq(nchar(x))
 }
-
-#' 
-#' As a reminder, the seq() function returns a sequence from 1 to number of specified element. See ffg examples:
-## -----------------------------------------------------------------------------------------------------------------
+#' Reminder: the seq() function returns a sequence from 1 up to and including the specified 
+#' number. E.g.,: 
 seq(3) # this outputs "1 2 3"
 seq(nchar("that")) #this outputs "1 2 3 4"
 
-#' Now, apply the created function above
-## -----------------------------------------------------------------------------------------------------------------
-sapply(random, sequence)
-
-#' 
-#' As displayed, the output is not simplified as vector.
+#' Now, apply the function created earlier:
+sapply(random, sequence) # the output is displayed as a list.
 #' 
 #' 
-#' ### 4. tapply() 
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+#' 4. tapply() 
 #' General structure: tapply(x, index, function, ...) \
 #' --> It applies to object subsets (vector, column of a data frame, element of a list, etc...)
-## -----------------------------------------------------------------------------------------------------------------
 patient_ID <- 1:30
 age <- c(32, 45, 44, 34, 23, 26, 37, 45, 12, 23, 44, 35, 57, 65, 76, 43, 42, 34,
          36, 37, 23, 21, 28, 24, 29, 13, 18, 32, 25, 28)
 treatment <- c("a", "c", "c", "b", "b", "b", "c", "b", "c", "a", "a", "a", "a", "a","b",
                "b", "b", "b", "c", "c", "c", "a", "b", "c", "b", "a", "a", "c", "a", "c")
-
 #' 
-## -----------------------------------------------------------------------------------------------------------------
 tapply(age, treatment, mean) # gives the mean age by treatment groups
 
-#' 
-#' Store the data in a data frame, and apply the function:
-## -----------------------------------------------------------------------------------------------------------------
+#' Store the data in a data frame:
 med_df <- data.frame(patient_ID, treatment, age)
-head(med_df) # Recall: 6 rows by default (same as the tail fxn)
-
+head(med_df) 
 #' 
-## -----------------------------------------------------------------------------------------------------------------
 tapply(med_df$age, med_df$treatment, mean)
 
 #' 
 #' A list could also work:
-## -----------------------------------------------------------------------------------------------------------------
 med_list <- list(patient_ID = patient_ID, treatment = treatment, age = age)
 tapply(med_list$age, med_list$treatment, mean)
 
 #' 
 #' 
+#' 
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #' # **PART 3**
-#' 
-#' ## aggregate() function 
-#' --> Similar to tapply() but with wider applications \
+#' aggregate() function 
+#' --> Similar to tapply() but with wider applications
 #' --> General structure: aggregate(formula, data, function, ...) \
-#' --> works with list or data frame (other data structures will be converted to either of these two)
+#' --> works with list or data frame (other data structures will have to be converted to either 
+#' of these two)
 #' 
-#' 
-#' Example -- Using the co2_uptake data (a built-in data set in R that contains an experiment data of CO2 uptake in plants from two different locations):
-## -----------------------------------------------------------------------------------------------------------------
+#' Example -- Using the co2_uptake data (a built-in data set in R that contains an experiment
+#' data of CO2 uptake in plants from two different locations):
 co2_uptake <- CO2
 head(co2_uptake)
-
-#' 
+tail(co2_uptake)
 #' Add a new column to the data:
-## -----------------------------------------------------------------------------------------------------------------
 co2_uptake$height <- c(35.77, 43.95, 38.10, 43.20, 43.02, 39.19, 31.60, 36.88, 41.11, 43.64,
                        36.82, 33.86, 30.17, 36.92, 36.15, 43.60, 32.35, 43.92, 40.50, 37.46, 
                        33.92, 42.19, 30.20, 35.64, 39.63, 36.39, 42.95, 33.88, 43.75, 41.10, 
@@ -436,120 +409,82 @@ co2_uptake$height <- c(35.77, 43.95, 38.10, 43.20, 43.02, 39.19, 31.60, 36.88, 4
                        34.82, 33.20, 31.57, 43.32)
 
 View(co2_uptake)
-
-#' 
-#' There are 7 concentration categories (95,175,250,350,500,675,1000) in the data. To calculate, say, mean uptake for each conc category:
-## -----------------------------------------------------------------------------------------------------------------
+#' There are 7 concentration categories (95,175,250,350,500,675,1000) in the data. To calculate, 
+#' say, mean uptake for each conc category:
 aggregate(uptake~conc, co2_uptake, mean) # tabular output
-
-#' 
-#' As already mentioned, the same operation could be performed using tapply(), but the output is in a vector format (unlike the aggregate fxn which produced a tabular output):
-## -----------------------------------------------------------------------------------------------------------------
+#' As mentioned earlier, the same operation could be performed using tapply(), but the output 
+#' is in a vector format (unlike the aggregate fxn which produced a tabular output):
 tapply(co2_uptake$uptake, co2_uptake$conc, mean) # vector output
-
 #' 
-#' Even better, aggregate() can handle multiple subsetting. For example, to calculate the mean uptake by concentration category and treatment group:
-## -----------------------------------------------------------------------------------------------------------------
+#' Even better, aggregate() can handle multiple subsetting. For example, to calculate the mean 
+#' uptake by concentration category and treatment group:
 aggregate(uptake ~ conc + Treatment, co2_uptake, mean)
-
-#' 
 #' ...or, mean uptake by conc, treatment, and type:
-## -----------------------------------------------------------------------------------------------------------------
 aggregate(uptake ~ conc + Treatment + Type, co2_uptake, mean)
-
 #' 
-#' Operations can also be performed on multiple elements/columns. For example, to calculate the mean uptake and mean height by conc:
-## -----------------------------------------------------------------------------------------------------------------
+#' Operations can also be performed on multiple elements/columns. For example, to calculate the 
+#' mean uptake and mean height by conc:
 aggregate(cbind(uptake, height) ~ conc, co2_uptake, mean)
 
-#' 
-#' 
+
 #' aggregate() also works on lists:
-## -----------------------------------------------------------------------------------------------------------------
 co2uptake_list <- list(plant = co2_uptake$Plant, type = co2_uptake$Type, 
                        treatment = co2_uptake$Treatment, conc = co2_uptake$conc, 
                        uptake = co2_uptake$uptake, height = co2_uptake$height)
 
-#' 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 aggregate(cbind(uptake, height) ~ conc, co2uptake_list, mean)
-
-#' 
-#' NB: the output structure is the same as for data frame. \
+#' NB: the output is also in tabular form
 #' 
 #' 
 #' Other functions can also be applied using aggregate(). For example:
-## -----------------------------------------------------------------------------------------------------------------
-aggregate(uptake ~ conc, co2uptake_list, length) # no. of uptake values recorded for each conc group
+aggregate(uptake ~ conc, co2uptake_list, length) # no. of uptake values per conc group
 aggregate(height ~ conc, co2uptake_list, length) # no. of height values per conc group
 aggregate(type ~ conc, co2uptake_list, length) # no. of type values per conc group
 
 #' 
 #' 
-#' 
-#' 
-#' ## paste() function
-#' This function allows to merge multiple elements together as one. For example, working with a sample of birds, one could assign each individual a label containing their name and ID:
-## -----------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+#' paste() function
+#' This function allows to merge multiple elements together as one. For example, working with 
+#' a sample of birds, one could assign each individual a label containing their name and ID:
 paste("RWBL", 1)
-
-#' 
 #' Alternatively, the entries can be first stored before calling the paste() function:
-## -----------------------------------------------------------------------------------------------------------------
 species <- "RWBL"
 num <- 1
 paste(species, num)
-
-#' 
 #' A "sep" argument can be added to define the separator (default is space):
-## -----------------------------------------------------------------------------------------------------------------
 paste(species, num, sep = "-")
 
-#' 
-#' When paste() is used on a vector containing several elements, it doesn't work (i.e., each element in that vector maintains its independence), unless the "collapse" argument is properly invoked/defined:
-## -----------------------------------------------------------------------------------------------------------------
+#' When paste() is used on a vector containing several elements, it doesn't work (i.e., each 
+#' element in that vector maintains its independence), unless the "collapse" argument is 
+#' properly invoked/defined:
 id <- c("RWBL", 1)
-paste(id) # each element in "id" is pasted separately
-
+paste(id) # each element in vector "id" is pasted separately
 #' 
-## -----------------------------------------------------------------------------------------------------------------
 paste(id, collapse = " ") # default value for collapse is NULL
 # the paste function now works as expected
-
 #' 
-## -----------------------------------------------------------------------------------------------------------------
 paste(id, collapse = "_")
+#' NB: the "collapse" argument works like the "sep" argument; so it could take different 
+#' values like space, underscore, period, etc. The default value is NULL.
 
-#' 
-#' NB: the "collapse" argument works like the "sep" argument; so it could take different values like space, underscore, period, etc. The default value is NULL. \
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-
-
-#' 
 #' The paste() function is really powerful when used with several vectors:
-## -----------------------------------------------------------------------------------------------------------------
 species <- c("RWBL", "MODO", "AMRO", "AMCR", "MODO")
 num <- 1:5
 paste(species, num, sep = "_")
-
-#' 
-#' It the pasted vectors are of different length, the longer one starts recycling with the rest, E.g.:
-## -----------------------------------------------------------------------------------------------------------------
+#' If the pasted vectors are of different length, the longer one gets recyled with the shorter one 
+#' until completion, E.g.:
 species <- c("RWBL", "MODO", "AMRO", "AMCR", "MODO")
 num <- 1:8
 paste(species, num, sep = "_")
-
-#' 
-#' This "recycling" feature comes in handy in the case of repetitions:
-## -----------------------------------------------------------------------------------------------------------------
+#' This "recycling" feature comes in handy during repetitions:
 num <- 1:10
-paste("Bird", num) # the "Bird" element gets recycled through the num var, thus printing Bird 1, Bird 2, ... Bird 10.
+paste("Bird", num) # the "Bird" element gets recycled through the num var, thus printing 
+#' Bird 1, Bird 2, ... Bird 10.
 
 #' 
-#' Data frame application:
-## -----------------------------------------------------------------------------------------------------------------
+#' Applying paste() to a df:
 df <- data.frame(species, num = 1:5)
 paste(df$species, df$num, sep = "_") # as usual, the output is vector
 
