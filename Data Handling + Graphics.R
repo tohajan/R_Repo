@@ -483,130 +483,102 @@ num <- 1:10
 paste("Bird", num) # the "Bird" element gets recycled through the num var, thus printing 
 #' Bird 1, Bird 2, ... Bird 10.
 
-#' 
 #' Applying paste() to a df:
 df <- data.frame(species, num = 1:5)
-paste(df$species, df$num, sep = "_") # as usual, the output is vector
+paste(df$species, df$num, sep = "_") # as usual, the output is in vector format
 
 #' 
 #' The output of the paste() function can be saved in an object and put to further use:
-## -----------------------------------------------------------------------------------------------------------------
 output = paste(df$species, df$num, sep = "_")
 df$idnum = output
-
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-View(df)
+(df)
 
 #' 
 #' 
-#' 
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #' # **PART 4**
-#' 
 #' ## Basic Plotting
-## -----------------------------------------------------------------------------------------------------------------
 maxd <- 10
 storks <- numeric(maxd)
 babies <- numeric(maxd)
-set.seed(15) # to retain the results of the rnorm functions
 for (i in 1:maxd) {
+  set.seed(15)
   storks[i] <- rnorm(1, i * 100, 10) # Recall -- general form is rnorm(n, mean, sd)
   babies[i] <- rnorm(1, i * 10, 10)
 }
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 (storks)
 (babies)
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 plot(storks, babies)
 abline(lm(babies ~ storks)) # fits a regression line to the plot
 
 # let's plot a new graph on the existing plot: 
 newstorkdata <- c(220, 411, 630, 705, 729, 850)
 newbabydata <- c(11, 22, 38, 41, 45, 52)
-points(newstorkdata, newbabydata, col = "red", pch = 19) #plots this on the existing graph; red  here is the color of the new points/observations
+points(newstorkdata, newbabydata, col = "red", pch = 19) #plots this on the existing graph; 
+#...red  here is the color of the new points/observations
 abline(lm(newbabydata ~ newstorkdata), col = "red") # red here is the color of the new line
 
 # add a legend to the graph:
 legend(100, 90, c("old data", "new data"), pch = c(1, 19), col = c("black", "red"))
-# NB: The first argument for the legend function is "x,y". Here, the value is 100,90, i.e., the legend should be placed at the point on the graph where x=100 and y=90
+# NB: The first argument for the legend function is "x,y". Here, the value is 100,90, i.e., the 
+#...legend should be placed at the point on the graph where x=100 and y=90
 
+# The legend could also be placed by replacing the coordinate argument with a locator argument:
+legend(locator(1), c("old data", "new data"), pch = c(1, 19), col = c("black", "red"))
 #' 
-## -----------------------------------------------------------------------------------------------------------------
-
-
-#' 
-#' NB: using the locator function (as shown in the following code) works in basic R script, but not in R markdown: \
-#' *legend(locator(1), c("old data", "new data"), pch = c(1, 19), col = c("black", "red"))*
-#' 
-#' One could also split the plot area as follows:
-## -----------------------------------------------------------------------------------------------------------------
+#' The plot area could also be split as follows:
 par(mfrow= c(1, 2)) # splits the plot area into a row with 2 columns
-# Recall that this code does not affect subsequent code chunks. However, in R scripts, the plot area must be reset to return to the original, non-split type, i.e., by running the code: par(mfrow = c(1,1))
-
-#' 
-#' The par() function can also be used to further define certain attributes of the graph(s), e.g.,: \
+par(mfrow=c(1,1)) # resets the plot area to a single format
+#' The par() function can also be used to further define certain attributes of the graph(s), e.g.,:
 #' par(las = 1, cex = 1, cex.lab =1.2, cex.axis = 1.1) \
 #' >-- las defines the style of axis labels (0=default=parallel, 1=horizontal, ...) \
 #' >-- cex magnifies plotting texts and symbols relative to the current size \
 #' >-- cex.lab magnifies axis labels relative to the current size \
 #' >-- cex.axis magnifies axis annotations relative to the current size
 #' 
+#' 
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #' ## Creating box plots using R's ggplot2 package
-## -----------------------------------------------------------------------------------------------------------------
 mydata <- ToothGrowth # ToothGrowth is a built-in data set in R
 mydata$dose <- as.factor(mydata$dose) #changes the dose var to factor data type
 View(mydata)
-
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 # install.packages("tidyverse") 
 library("ggplot2")
 names(mydata)
-
-#' 
 #' Now, let's create a box plot:
-## -----------------------------------------------------------------------------------------------------------------
-ggplot(mydata, aes(supp, len)) # creates an empty plot 
+ggplot(mydata, aes(supp, len)) # creates an empty plot, with variable "supp" on the x-axis and
+#..."len" on the y-axis
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 ggplot(mydata, aes(supp, len)) + geom_boxplot() # inserts a boxplot into the empty plot created above
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-# differentiate columns of box plots by the dose category
+# differentiate columns of box plots by the dose category:
 ggplot(mydata, aes(supp, len)) + geom_boxplot() + facet_grid(. ~ dose)
-
-#' 
 #' Alternatively, this "subsetting" can be done in the aesthetic ("aes") argument:
-## -----------------------------------------------------------------------------------------------------------------
-ggplot(mydata, aes(supp, len, fill = dose)) + geom_boxplot() # this creates all box plots on a single graph, each category's plot differentiated by a distinct color.
+ggplot(mydata, aes(supp, len, fill = dose)) + geom_boxplot() # this creates all box plots on a 
+#...single graph, each category differentiated by a distinct color.
 
-#' 
-#' Further, the color can be set such that darker/lighter color indicates an increase or decrease in levels of, for example, dose:
-## -----------------------------------------------------------------------------------------------------------------
+#' Further, the color can be set such that darker/lighter color indicates an increase or 
+#' ...decrease in levels of the categorizing variable (e.g., dose in the current example):
 my_color <- c("#fff7bc", "#fec44f", "#d95f0e") # yellow, orange, and red colors, respectively
 ggplot(mydata, aes(supp, len, fill = dose)) + geom_boxplot() + scale_fill_manual(
                                     name = "Dose (mm)", breaks = c("0.5", "1", "2"),
                                    labels = c("Low 0.5mm", "Medium 1mm", "High 2mm"),
                                    values = my_color)
 
-#' 
 #' Change the background color to black and white:
-## -----------------------------------------------------------------------------------------------------------------
 ggplot(mydata, aes(supp, len, fill = dose)) + geom_boxplot() + scale_fill_manual(
   name = "Dose (mm)", breaks = c("0.5", "1", "2"),
   labels = c("Low 0.5mm", "Medium 1mm", "High 2mm"),
   values = my_color) + theme_bw() # NB: the previous color was grey-ish
 
-#' 
-#' 
 #' And a lot more...
-## -----------------------------------------------------------------------------------------------------------------
 ggplot(mydata, aes(supp, len, fill = dose)) + geom_boxplot() + scale_fill_manual(
   name = "Dose (mm)", breaks = c("0.5", "1", "2"),
   labels = c("Low 0.5mm", "Medium 1mm", "High 2mm"),
@@ -629,55 +601,51 @@ ggplot(mydata, aes(supp, len, fill = dose)) + geom_boxplot() + scale_fill_manual
 
 #' 
 #' 
-#' 
-#' 
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #' ## Creating Histograms and density plots using ggplot2 
-## -----------------------------------------------------------------------------------------------------------------
 setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 getwd()
 mydata <- read.csv("Mammal_lifehistories_v2.csv")
 names(mydata)
 View(mydata)
 head(mydata)
-summary(mydata)
+summary(mydata) # gives basic statistics (min, max, mean, median, etc.) of each numeric column. A
+#..similar function but with more detailed output is the describe function in psych package:
+library("psych")
+describe(mydata)
 ncol(mydata)
 nrow(mydata)
-
+str(mydata) # displays basic info of the data (no. of rows & columns, data types, and the first
+#...few observations in each column). A similar function is the glimpse()
+library("dplyr")
+glimpse(mydata)
 #' 
 #' Some of the cells have "-999" representing NA's (missing cases); remove such obs:
-## -----------------------------------------------------------------------------------------------------------------
 mydata <- mydata[mydata$gestation.mo > 0 & mydata$mass.g > 0 & mydata$litter.size > 0, ]
+# Note that this syntax removes missing obs only from variables of interest
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-m <- ggplot(mydata, aes(x = gestation.mo))
+m <- ggplot(mydata, aes(x = gestation.mo)) # a histogram uses only one variable, which is thus
+#...defined for the x-axis
 m + geom_histogram()
-
-#' 
 #' Change the width of the bars:
-## -----------------------------------------------------------------------------------------------------------------
 m + geom_histogram(binwidth = 0.4)
 
-#' 
 #' To create different histograms by, say, order categories (1st column in the current data):
-## -----------------------------------------------------------------------------------------------------------------
-m + geom_histogram(binwidth = 0.4) + facet_grid(order ~ .)
+m + geom_histogram(binwidth = 0.4) + facet_grid(order ~ .) 
+# NB: the syntax is switched for the facet_grid(), i.e., "variable ~ ." [Recall: the syntax was 
+#... ". ~ variable" for the boxplots plotted earlier]
 
-#' NB: the result is too tiny to read because there are too many order categories, some well-sampled and others under-sampled.
+#' PS: the result is too tiny to read because there are too many order categories, some 
+#' ...well-sampled and others under-sampled.
 #' 
-#' To get the # of obs in each order category:
-## -----------------------------------------------------------------------------------------------------------------
-xtabs(~ order, mydata)
-
-#' 
-#' Subset orders with enough obs (say at least 100 each):
-## -----------------------------------------------------------------------------------------------------------------
+#' Check the # of obs in each order category:
+xtabs(~ order, mydata) # some orders have only 1 obs, and there are orders with 100+
+#' Create a data containing only orders with enough obs (say at least 100 each):
 mydata_largeorders <- mydata[mydata$order == "Artiodactyla" | mydata$order == "Carnivora" |
                                mydata$order == "Primates" | mydata$order == "Rodentia", ]
 
-#' 
-#' Now rerun the operation on the subset data:
-## -----------------------------------------------------------------------------------------------------------------
+#' Now rerun the operation (plotting a histogram) for the new data:
 m2 <- ggplot(mydata_largeorders, aes(x = gestation.mo))
 m2 + geom_histogram(binwidth = 0.7) + facet_grid(order ~ .)
 
