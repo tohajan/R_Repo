@@ -633,8 +633,8 @@ m + geom_histogram(binwidth = 0.4)
 
 #' To create different histograms by, say, order categories (1st column in the current data):
 m + geom_histogram(binwidth = 0.4) + facet_grid(order ~ .) 
-# NB: the syntax is switched for the facet_grid(), i.e., "variable ~ ." [Recall: the syntax was 
-#... ". ~ variable" for the boxplots plotted earlier]
+# NB: the syntax can be switched for the facet_grid(), i.e., "variable ~ ." [Recall: the syntax 
+#... was ". ~ variable" for the boxplots plotted earlier]
 
 #' PS: the result is too tiny to read because there are too many order categories, some 
 #' ...well-sampled and others under-sampled.
@@ -648,61 +648,50 @@ mydata_largeorders <- mydata[mydata$order == "Artiodactyla" | mydata$order == "C
 #' Now rerun the operation (plotting a histogram) for the new data:
 m2 <- ggplot(mydata_largeorders, aes(x = gestation.mo))
 m2 + geom_histogram(binwidth = 0.7) + facet_grid(order ~ .)
-
 #' 
 #' 
-#' 
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #' ## Creating scatterplots using ggplot2 
-## -----------------------------------------------------------------------------------------------------------------
-setwd("G:/My Drive/Programming/Data Science/DATA SETS")
+# setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 co2data <- read.csv("canada.co2.by.sector.csv")
 names(co2data)
-nrow(co2data); dim(co2data)
+nrow(co2data)
+dim(co2data)
 summary(co2data)
 View(co2data)
 head(co2data)
-
-
 #' 
 #' Remove rows/obs where the sector value is "Total, all sectors"
-## -----------------------------------------------------------------------------------------------------------------
 co2data <- co2data[co2data$SECTOR != "Total, all sectors", ]
-
 #' 
 #' Create a scatterplot of output (in kilotonnes; column 4) vs. year:
-## -----------------------------------------------------------------------------------------------------------------
 # install.packages("tidyverse") # package already installed
 # library(ggplot2) # library opened already
 co2_scatter <- ggplot(co2data, aes(year, log(co2_ann_kilotonnes), colour = 
                                      SECTOR)) + geom_point() + stat_smooth(method = "lm")
 co2_scatter
-
-#' 
-#' The resulting scatterplot have some portions cut off because there are too many SECTOR categories. Try a subset of these categories:
-## -----------------------------------------------------------------------------------------------------------------
+#' The scatterplot has some portions cut off because there are too many SECTOR categories. 
+#' Try a subset of these categories:
 library("dplyr")
 co2data_order <- co2data %>% group_by(SECTOR) %>% summarise(co2mean = 
                             mean(co2_ann_kilotonnes)) %>% arrange(desc(co2mean))
-
-#' In the code chunk above: the co2data is grouped by the variable SECTOR, then the mean co2 ouptut of each sector is aggregated (displayed) in a single row then the rows are arranged by descending order of the means.
+#' The above syntax performs the following tasks:
+#' first, group the co2data by the variable SECTOR, 
+#' next, display the mean co2 output for each sector in a table, 
+#' next, arrange the rows by descending order of the mean CO2.
 ## -----------------------------------------------------------------------------------------------------------------
 View(co2data_order)
 head(co2data_order)
 
-#' 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-co2data_order_top10 <- co2data_order[1:10, ] # a new data set containing only the top 10 SECTORS by mean co2 output
+co2data_order_top10 <- co2data_order[1:10, ] # a new data set containing only the 10 SECTORS 
+#...with the highest mean co2
 
-#' 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-top10 <- c(co2data_order_top10$SECTOR) # concatenates the values of the SECTOR column
+top10 <- c(co2data_order_top10$SECTOR) # concatenates the values in the SECTOR column of 
+#...the new data
 top10[5] # the 5th element in the vector
 
-#' 
-#' From the original data, cull out observations in the top 10 sectors into a new data:
-## -----------------------------------------------------------------------------------------------------------------
+#' From the original data, sieve out observations in the top 10 sectors into a new data:
 co2_top10 <- co2data[co2data$SECTOR == top10[1] | co2data$SECTOR == top10[2] |
                        co2data$SECTOR == top10[3] | co2data$SECTOR == top10[4] |
                        co2data$SECTOR == top10[5] | co2data$SECTOR == top10[6] |
@@ -712,21 +701,14 @@ nrow(co2_top10)
 tail(co2_top10)
 View(co2_top10)
 
-#' 
-#' Create a scatterplot for the top 10 sectors:
-## -----------------------------------------------------------------------------------------------------------------
+#' Now, return to the original task: Creating a scatterplot for the top 10 sectors:
 top10_scatter <- ggplot(co2_top10, aes(year, log(co2_ann_kilotonnes), colour = 
                                      as.factor(SECTOR))) + geom_point() + stat_smooth(method = "lm")
 (top10_scatter)
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 top10_scatter + theme_bw() # changes the background theme to black & white
 
-#' 
-#' 
 #' Make further changes to the plot:
-## -----------------------------------------------------------------------------------------------------------------
 top10_scatter <- ggplot(co2_top10, aes(year, log(co2_ann_kilotonnes), colour = 
                 as.factor(SECTOR))) + geom_point() + stat_smooth(method = "lm") + theme(
                   plot.background = element_blank(),
@@ -749,50 +731,35 @@ top10_scatter
 
 #' 
 #' 
-#' 
-#' 
-#' 
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #' ## Insetting Graphical Panels using ggplot2
-## -----------------------------------------------------------------------------------------------------------------
-setwd("G:/My Drive/Programming/Data Science/DATA SETS")
+# setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 mydata <- read.csv("Mammal_lifehistories_v2.csv")
 names(mydata)
-
-#' 
-#' Remove observations with negative values (the coding for missing cases in the current data):
-## -----------------------------------------------------------------------------------------------------------------
+#' Remove observations with negative values in the variables of interest (the coding for 
+#' ...missing cases in the current data):
 mydata <- mydata[mydata$gestation.mo > 0 & mydata$mass.g > 0 & mydata$max.life.mo > 0, ]
 head(mydata)
-
 #' 
 #' Add new columns for the logs of mass and gestation:
-## -----------------------------------------------------------------------------------------------------------------
 mydata$log_mass <- log(mydata$mass.g)
 mydata$log_gest <- log(mydata$gestation.mo)
 head(mydata)
 
-#' 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 # library(ggplot2) # library already opened previously
 main <- ggplot(mydata, aes(log_mass, log_gest)) + geom_point() + theme_bw()
 main
 class(main)
-
 #' 
-## -----------------------------------------------------------------------------------------------------------------
 sub <- main + geom_rect(data = mydata[1, ], xmin = 0, ymin = -1, xmax = 12, ymax =2.5,
                         fill = "blue", alpha = 0.5)
 #* geom_rect = a geometric rectangle
 #* alpha = transparency of the rectangle
+#' 
+sub$layers <- rev(sub$layers) # reorders the layers so that the graphical panel is placed 
+#...inwards/under/below the scatter points (see output of the next code)
 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
-sub$layers <- rev(sub$layers) # reorders the layers to draw rectangle below the points
-
-#' 
-#' 
-## -----------------------------------------------------------------------------------------------------------------
 main + annotation_custom(ggplotGrob(sub), xmin = 0.01, xmax = 5, ymin = 1.5, 
                          ymax = 3.3) + scale_x_continuous(
                            limits = c(0, 12)) + scale_y_continuous(limits = c(-1, 3.3))
@@ -800,7 +767,7 @@ main + annotation_custom(ggplotGrob(sub), xmin = 0.01, xmax = 5, ymin = 1.5,
 # scale_x_continous: the lower and upper limits of the main panel's x axis
 # scale_y_continous: the lower and upper limits of the main panel's y axis
 
-#' 
 #' >-- The main panel now shows just a portion of the plot covered by the rectangle \
-#' >-- the sub panel (showing the blue rectangle and the rest of the entire graph) is insetat the top left of the larger panel
+#' >-- the sub panel (showing the blue rectangle and the rest of the entire graph) is inset 
+#' at the bottom left of the main panel
 #' 
