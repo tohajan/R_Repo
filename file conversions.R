@@ -7,6 +7,7 @@ library(knitr)
 
 # b. To extract R codes along with documentation (i.e., the non-codes in an .Rmd file):
 # purl("Data Handling & Graphics.Rmd", output = "Data Handling + Graphics.R", documentation = 2) 
+# purl("Simulation.Rmd", output = "Simulation.R", documentation = 2)
 
 
 # 2. MAKE AN .Rmd DOC RUN IN GITHUB (see complete details 
