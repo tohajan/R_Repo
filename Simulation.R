@@ -1,45 +1,41 @@
 #' ---
 #' title: "Simulation in R"
 #' author: "Toheeb"
-#' date: "`r Sys.Date()`"
-#' output: html_document
-#' ---
 #' 
 #' 
 #' # **BASIC POPULATION DYNAMICS**
-#' **Difference Equations in R \
-#' **DISCRETE-TIME DYNAMICAL MODELS \
+#' **Difference Equations in R 
+#' **DISCRETE-TIME DYNAMICAL MODELS 
 #' Difference equations are used for when changes occur in discrete time intervals
 #' 
 #' ## 1. Exponential Growth (i.e., a population growing indefinitely)
 #' ### Method A 
-#' To calculate exponential growth at discrete time intervals, the difference equation (i.e., the discrete-time exponential equation) is:\
-#' N~t+1~ = N~t~ + bN~t~ - dN~t~ [where **N~t+1~** = new popn size; **N~t~** = old popn size; **b** = per capita birth rate; **d** = per capita death rate] \
-#'          = N~t~ + (b-d)N~t~ \
-#'          = N~t~ + (r)N~t~ \
-#'          = (1 + r)N~t~ \
-#'          = λN~t~
+#' To calculate exponential growth at discrete time intervals, the difference equation (i.e., 
+#' the discrete-time exponential equation) is:
+#' N_t+1 = N~_ + bN_t - dN_t where N_t+1 = new popn size; N_t = old popn size; b = per capita 
+#' ...birth rate; d = per capita death rate)
+#'          = N_t + (b-d)N_t
+#'          = N_t + (r)N_t 
+#'          = (1 + r)N_t 
+#'          = λN_t
 #' 
 #' Example 1: Calculate population size at 10 discrete times, using the formula above.
-## ------------------------------------------------------------------------------------------------
-# Use FOR loop
+# Use a FOR loop
 generations <- 10
-N <- numeric(generations) #a numeric vector with spaces for 10 numeric values
+N <- numeric(generations) # a vector with empty spaces for 10 numeric values
 N[1] <- 3 # assume the first element in N is 3, i.e., the initial population size
-lambda <- 2.1 # assume lambda has a value of 2.1
+lambda <- 2.1 # assume lambda (growth coefficient??) has a value of 2.1
 for (t in 1:(generations - 1)) {
-    N[t + 1] <- lambda * N[t] # "1:generations" implies 1 to 10 (since "generations" has been assigned a value of 10)
+    N[t + 1] <- lambda * N[t] 
 }
-N
+(N)
 
-## ------------------------------------------------------------------------------------------------
 plot(0:(generations - 1), N, type = "o", xlab = "Time", ylab = "Size")
-# "0:(generation-1)" is "0 to 9".
 # NB: the population is initially at rest (no changes), hence the starting point is zero
 
 #' 
-#' Example 2: To calculate population growth for different populations with different starting sizes, lambdas, and time points, a function is more useful here
-## ------------------------------------------------------------------------------------------------
+#' Example 2: To calculate population growth for different populations with different starting 
+#' sizes, lambdas, and time points, a function is more useful here:
 pop_growth <- function(lambda, N0, gen) {
     for (i in 1:(gen - 1)) {
         N0[i + 1] <- lambda * N0[i]
@@ -48,18 +44,16 @@ pop_growth <- function(lambda, N0, gen) {
 }
 
 #' 
-## ------------------------------------------------------------------------------------------------
-# if lambda is 2.1 and population size starts at n = 3, what are new population sizes at 9 additional discrete times?
+# if lambda is 2.1 and population size starts at n = 3, what are new population sizes at 9 
+#...more instances?
 pop_growth(2.1, 3, 10)
 
 #' 
-## ------------------------------------------------------------------------------------------------
 # if lambda is 1.7 and population size starts at n = 5, what are new population sizes at 6 additional discrete times?
 pop_growth(1.7, 5, 7)
 
 #' 
 #' Throw a graph into the mix:
-## ------------------------------------------------------------------------------------------------
 popgrowth_graph <- function(lambda, N0, gen) {
     for (i in 1:(gen - 1)) {
         N0[i + 1] <- lambda * N0[i]
