@@ -1,487 +1,422 @@
 #' ---
 #' title: "Statistical Modeling"
 #' author: "Toheeb"
-#' date: "`r Sys.Date()`"
-#' output: html_document
 #' ---
 #' 
 #' # **Linear Regression**
-#' Linear regression: \
-#' >-- i) describes the relationship between variables (including at least 1 continuous); and \
-#' >-- ii) tests for the evidence of a linear relationship of a given slope between the two variables.
+#' Linear regression:
+#' -- i) describes the relationship between variables (including at least 1 continuous); and
+#' -- ii) tests for the evidence of a linear relationship of a given slope btw the 2 variables.
 #' 
-#' The term was coined by Francis Glaton 1889 ("regression to mediocrity"). The overall approach was further developed by Pearson and Fisher.
+#' The term was coined by Francis Glaton 1889 ("regression to mediocrity"). The overall approach 
+#'...was further developed by Pearson and Fisher.
 #' 
-#' Let's do some modeling!!!
-## ------------------------------------------------------------------------------------------------
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS")
+setwd("G:/My Drive/Programming/Data Science/DATA SETS")
 gannet <- read.csv("GannetDataCSV.csv")
 View(gannet)
 head(gannet)
 
 #' 
-## ------------------------------------------------------------------------------------------------
 par(pch = 19) # sets the plot style
 plot(gannet$sqrtpop, gannet$tripduration, xlab = "sqrt colonoy size",
      ylab = "trip duration (h)")
-text(gannet$sqrtpop, gannet$tripduration, labels = gannet$colony, cex = 0.6, pos = 4) # this code labels points on the graph
-#   labels: defines the labeling rule/indicator for each point on the graph
-#*  cex: character size of the label
-#*  pos: position of each label relative to the corresponding point
-
+text(gannet$sqrtpop, gannet$tripduration, labels = gannet$colony, cex = 0.6, pos = 4) # this 
+#...syntax labels points on the graph
+#     labels: defines the labeling rule/indicator for each point on the graph
+#*    cex: character size of the label
+#*    pos: position of each label relative to the corresponding point
 #' 
-## ------------------------------------------------------------------------------------------------
 # fit a linear model to the data
 model <- lm(tripduration ~ sqrtpop, data = gannet)
-
 #' 
-## ------------------------------------------------------------------------------------------------
 # fit a regression line to the model
-plot(gannet$sqrtpop, gannet$tripduration, xlab = "sqrt colonoy size",
-     ylab = "trip duration (h)")
-text(gannet$sqrtpop, gannet$tripduration, labels = gannet$colony, cex = 0.6, pos = 4)
 abline(model)
-
 #' 
-## ------------------------------------------------------------------------------------------------
 # obtain descriptors of the model
-summary(model) 
-
+summary(model)
 #' 
-## ------------------------------------------------------------------------------------------------
 # Get the confidence intervals of the model estimates
-confint(model) 
-
+confint(model)
 #' 
-#' Can also run ANOVA on the same data/model:
-## ------------------------------------------------------------------------------------------------
-anova(model)
-
-#' Results: the p-value is the same as observed in the linear regression model.
+#' Can also run ANOVA on the model:
+anova(model) #' the p-value is the same as observed in the linear regression model.
 #' 
 #' 
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #' ## Evaluating the assumptions of linear regression
 #' ### Assumption 1 (homogeneity of variance)
-## ------------------------------------------------------------------------------------------------
 plot(model, which = 1)
-
-#' 
-#' Results: there isn't evidence of dramatic changes in variance. Hence, assumption 1 (i.e., homogeneity of error variance) holds!
+#' Results: there isn't evidence of dramatic changes in variance. Hence, assumption 1 
+#' (i.e., homogeneity of error variance) holds!
 #' 
 #' ### Assumption 2 (Linearity)
-## ------------------------------------------------------------------------------------------------
 # obtain a Q-Q plot
-plot(model, which = 2) 
-
-#' 
-#' Results: the points are relatively linear. To be sure, one could plot the standard residuals on a histogram:
-## ------------------------------------------------------------------------------------------------
-sresids <- rstandard(model)
-hist(sresids)
-
-#' 
-#' Results: Hard to tell due to small sample size, but there seems to be no dramatic departure from normality.
+plot(model, which = 2)
+#' Results: the points are relatively linear. To be sure, one could plot the standard 
+#' residuals on a histogram:
+sresids <- rstandard(model) #obtain the standard residuals of the model
+hist(sresids) #plot the standard residuals on a histogram
+#' Results: Hard to tell due to small sample size, but there seems to be no dramatic departure 
+#' from normality.
 #' 
 #' 
 #' 
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #' ## Prediction
-#' A linear regression model can also be used for prediction. E.g., predict the tripduration when the sqrtpop is 100:
-## ------------------------------------------------------------------------------------------------
+#' A linear regression model can also be used for prediction. E.g., predict the tripduration 
+#' when the sqrtpop is 100:
 predict(model, list(sqrtpop = 100))
-
-#' 
 #' Results: tripduration = 10.55451. [This can be confirmed on the lin reg graph]
 #' 
-#' We can also check predictability of the whole data. E.g., assess the 95% prediction intervals of the data (i.e., the range under which 95% of y should fall for a given value of x)
-## ------------------------------------------------------------------------------------------------
-plot(gannet$sqrtpop, gannet$tripduration, xlab = "sqrt colonoy size",
-     ylab = "trip duration (h)")
-text(gannet$sqrtpop, gannet$tripduration, labels = gannet$colony, cex = 0.6, pos = 4)
-# the above codes are reproduced from earlier ones. See the "NB" note below
-
+#' We can also check predictability of the whole data. E.g., assess the 95% prediction 
+#'..intervals of the data (i.e., the range under which 95% of y should fall for a given value 
+#'..of x)
 xv <- seq(0,250,0.1)
 yv <- predict(model, list(sqrtpop = xv), int = "prediction", level = 0.95)
-matlines(xv, yv, lty = c(1,2,2), col = "red") # highlights the prediction intervals on the graph
+matlines(xv, yv, lty = c(1,2,2), col = "red") #highlights the prediction intervals on the graph
 # lty (line type): defines the line designs (1=solid, 2=dashed, 3= dotted, etc.)
-
-#NB: The abline, matlines, etc. functions don't work unless the plot function is recalled each time.
-
 #' 
-#' --------------------------------------------------------------------------------
-#' --------------------------------------------------------------------------------
-#' --------------------------------------------------------------------------------
+#' 
+#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
 #' 
 #' # **Multiple Linear Regression**
 #' Ex: Predicting age at death of known statisticians
-## ------------------------------------------------------------------------------------------------
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS")
 statisticians <- read.csv("StatisticiansAgesCSV.csv")
 View(statisticians)
 head(statisticians)
-
 #' 
 #' Use a plot to visualize the data: 
-## ------------------------------------------------------------------------------------------------
 plot(statisticians$Birth.Year, statisticians$Age.on.Death, xlab = "Date of Birth",
      ylab = "Age")
 text(statisticians$Birth.Year, statisticians$Age.on.Death, 
      labels = statisticians$Statistician, cex = 0.5, pos = 1)
-
 #' 
-#' 
-## ------------------------------------------------------------------------------------------------
 # fit a linear model to the data (Using Birth.year as IV)
 model1 <- lm(Age.on.Death ~ Birth.Year, data = statisticians)
-
+#' 
 # run ANOVA on the linear model
 anova(model1)
-
-#' Results: p-value=0.3921. DO NOT reject the null hypothesis (NH) that age and birth year are independent of one another (i.e., there is no evidence of a relationship between the two variables).
+#' Results: p-value=0.3921. DO NOT reject the null hypothesis (NH) that age and birth year 
+#' ..are independent of one another (i.e., there is no evidence of a relationship between the 
+#' ..two variables).
 #' 
 #' Repeat the analysis, this time using Death year as IV:
-## ------------------------------------------------------------------------------------------------
 model2 <- lm(statisticians$Age.on.Death ~ statisticians$Death.Year)
 anova(model2)
-
-#' Results: p-value=0.03305. REJECT the NH that age and death year are independent (i.e., there is evidence of a linear relationship between both).
+#' Results: p-value=0.03305. REJECT the NH that age and death year are independent (i.e., 
+#' ..there is evidence of a linear relationship between both).
 #' 
 #' How are they related? Check the coefficients:
-## ------------------------------------------------------------------------------------------------
 model2$coeff
-
 #' Results: coefficient=0.1474. 
 #' Interpretation: For each unit increase in death year, age on death increases by 0.147 units.
 #' 
 #' Fit a line representing the model2 equation:
-## ------------------------------------------------------------------------------------------------
-plot(statisticians$Birth.Year, statisticians$Age.on.Death, xlab = "Date of Birth",
+plot(statisticians$Death.Year, statisticians$Age.on.Death, xlab = "Date of Death",
      ylab = "Age")
 text(statisticians$Birth.Year, statisticians$Age.on.Death, 
      labels = statisticians$Statistician, cex = 0.5, pos = 1)
-
 
 abline(coef = c(model2$coeff[1],model2$coeff[2]), col = "red") # equation for model 2
 
 #' 
 #' ## Model both IVs (multiple regression - MR)
-## ------------------------------------------------------------------------------------------------
 model3 <- lm(statisticians$Age.on.Death ~ statisticians$Death.Year + 
                statisticians$Birth.Year)
-
 #' 
 #' ### Significance of Effects
-## ------------------------------------------------------------------------------------------------
 anova(model3)
-
 #' Results: both predictors are highly significant (p<2.2e-16 each). 
-#' Why does birth year become significant? [Recall that it was not significant in the bivariable (i.e., single IV) model] \
-#' >-- Answer: in the current model, death year is held constant meaning that, birth year becomes significant when we control for death year. \
-#' *PS: the default ANOVA approach in a multivariable analysis is called TYPE I SUM OF SQUARES. That is, the focus is on the last IV in the series; every other IV before/above it is held constant in the model.*
+#' Why does birth year become significant? [Recall that it was not significant in the 
+#' bi-variable (i.e., single IV) model]
+#' >-- Answer: in the current model, death year is held constant meaning that, birth year 
+#' ..becomes significant when we control for death year.
+#' PS: the default ANOVA approach in a multivariable analysis is called TYPE I SUM OF SQUARES. That is, the focus is on the last IV in the series; every other IV before/above it is held constant in the model.*
 #' 
-#' Note that each IV now has a lower p-value. This is due to multiple IVs in a model. Specifically, having more than one IV (i.e., MR) reduces the error variability, lower than the simple model. This results in a lower p-value.
+#' NB: each IV now has a lower p-value. This is due to multiple IVs in a model. Specifically, 
+#' ..having more than one IV (i.e., MR) reduces the error variability, lower than the simple 
+#' ..model. This results in a lower p-value.
 #' 
-## ------------------------------------------------------------------------------------------------
 # obtain the model coefficient
 model3$coef
 
 #' 
-#' Because there are multiple IVs in R, the results can not be visualized in a 2-D plot. Instead, use the avPlots function in the car library:
-## ------------------------------------------------------------------------------------------------
+#' Because there are multiple IVs, the results can not be visualized in a 2-D plot; instead, use the 
+#' ..avPlots function in the car library:
 library(car)
 avPlots(model3)
 
 #' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
 #' ### THE TYPE III SUM OF SQUARES APPROACH
 #' This method simultaneously adjusts for the effects of all other predictors in the model.
-## ------------------------------------------------------------------------------------------------
 # Type III SS uses the 'Anova' function in the 'car' package (loaded earlier)
 Anova(model3, type = "III") #Note the capital A in "Anova"
-
+#' Results: each predictor (Death year and Birth year) is highly significant when controlling 
+#' ..for the other.
 #' 
-#' Results: each predictor (Death year and Birth year) is highly significant when controlling for the other.
-#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
 #' ## EVALUATING THE ASSUMPTIONS OF THE GENERAL LINEAR MODEL
-#' ### Assumption 1: homogeneity
-## ------------------------------------------------------------------------------------------------
+#' ### Assumption 1: homogeneity of variance
 plot(model3, which = 1)
-
-#' 
-#' Results: there are no apparent significant changes across the error variance. So, assumption 1 seems to hold.
+#' Results: there are no apparent significant changes across the error variance. So, 
+#' ..assumption 1 seems to hold.
 #'  
 #' ###  Assumption 2: Normality
-## ------------------------------------------------------------------------------------------------
 plot(model3, which = 2)
-
-#' 
 #' Results: the Q-Q plot suggests a non-normal data. Assumption 2 may have been violated!
 #' To be sure, check the histogram distribution of the standard residuals:
-## ------------------------------------------------------------------------------------------------
 sresids <- rstandard(model3)
 hist(sresids)
-
+#' Results: the histogram shows a bivariate shape, rather than the uni-variate appearance that 
+#' ..characterizes a normal distribution. So it appears that the assumption is violated. Note, 
+#' ..however, that this is a small sample.
 #' 
-#' Results: the histogram shows a bivariate shape, rather than the univariate appearance that characterizes a normal distribution. So it appears that the assumption is violated. Note, however, that this is a small sample.
 #' 
-#' --------------------------------------------------------------------------------
-#' --------------------------------------------------------------------------------
-#' --------------------------------------------------------------------------------
 #' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
 #' # **Logistic Regression**
-#' The logistic regression is a generalized linear model and will work for both continuous and categorical predictors.
-#' 
-#' NB: General Linear Model assumes the residuals/errors follow a normal distribution. Generalized Linear Model, on the other hand, allows residuals to have other distributions from the exponential family of distributions.
+#' The logistic regression is a generalized linear model and works for both continuous and 
+#' ..categorical predictors.
+#' NB: General Linear Model assumes the residuals/errors follow a normal distribution. 
+#' Generalized Linear Model, on the other hand, allows residuals to have other distributions 
+#' ..from the exponential family of distributions.
 #' 
 #' ## Hypothesis testing in logistic regression
-#' Testing the hypothesis that a coefficient on a predictor variable is different from zero at population level uses the "Wald statistic" (*z* in R). The Wald statistic is simply the square of the regular *t*-statistic. If the NH is true, then it has a particular distribution (the chi-square).
+#' Testing the hypothesis that a coefficient on a predictor variable is different from zero at 
+#' ..population level uses the "Wald statistic" (z in R). The Wald statistic is simply the 
+#' ..square of the regular t-statistic. If the NH is true, then it has a particular 
+#' ..distribution (the chi-square).
 #' 
-## ------------------------------------------------------------------------------------------------
-puffinbill <- read.csv("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS/puffinbill.csv")
+puffinbill <- read.csv("puffinbill.csv")
 View(puffinbill)
 head(puffinbill)
 # three columns:
 # bird = bird ID
 # sex = bird's sex (male or female)
 # curlen = size/length of the bird's bill
-
 #' 
-## ------------------------------------------------------------------------------------------------
 sex <- puffinbill$sex
 curlen <- puffinbill$curlen
-sexcode <- ifelse(sex == "F", 1, 0) # recode sex (female=1; male=0)
-
+sexcode <- ifelse(sex == "F", 1, 0) # code sex (if female, recode as 1; otherwise, code as 0)
 #' 
-## ------------------------------------------------------------------------------------------------
 # plot a graph
 plot(curlen, jitter(sexcode, 0.15), pch = 19,
      xlab = "Bill lenght (mm)", ylab = "Sex (0 - male, 1 - female)")
-#NB: the jitter prevents overlapping (i.e., in cases of individuals of same sex having similar bill length)
-
+#' NB: the jitter prevents overlapping (i.e., in cases of individuals of same sex having 
+#' ..similar bill length)
 #' 
-#' According to the the graph, males tend to have generally longer bills than females.
-#' 
+#' According to the the graph, males tend to have longer bills than females.
 #' Now let's fit a binary regression (logistic) model to the data:
-## ------------------------------------------------------------------------------------------------
 model <- glm(sexcode~curlen, binomial)
 summary(model)
-
-#' As shown in the output, we reject the NH that the bill length has no impact on sex (p=0.00075)
-#' 
-#' Now, let's plot a line of this model on the graph:
-## ------------------------------------------------------------------------------------------------
-plot(curlen, jitter(sexcode, 0.15), pch = 19,
-     xlab = "Bill lenght (mm)", ylab = "Sex (0 - male, 1 - female)")
-#NB: Recall that the graph must be recreated (using the plot function as done here) in each code chunk for the desired line(s) [i.e., using lines, abline, or similar function] to be displayed on the graph .
+#' Results: we reject the NH that the bill length has no impact on sex (p=0.00075)
+#' Next, plot a line of this model on the graph:
 xv <- seq(min(curlen), max(curlen), 0.01)
 yv <- predict(model, list(curlen = xv), type = "response")
 lines(xv, yv, col = "red") # code for the sigmoidal curve - the curve for binary outcomes
 
-#' 
-#' Alternatively, one could use the logi.hist.plot() function in "popbio" library:
-## ------------------------------------------------------------------------------------------------
+#' Alternatively, use the logi.hist.plot() function in "popbio" library:
 # install.packages("popbio") #the library hadn't been previously installed
 library(popbio)
 # Now plot the graph
 logi.hist.plot(curlen, sexcode, boxp = FALSE, type = "count", col = "gray", xlabel = "size")
 
 #' 
-#' --------------------------------------------------------------------------------
-#' --------------------------------------------------------------------------------
-#' --------------------------------------------------------------------------------
 #' 
 #' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
 #' # **Polynomial Regression**
-#' 
-## ------------------------------------------------------------------------------------------------
-fluoride <- read.csv("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS/FlourideDMF.csv")
+fluoride <- read.csv("FlourideDMF.csv")
 View(fluoride)
 head(fluoride)
-
 #' 
 #' Assign x and y variables:
-## ------------------------------------------------------------------------------------------------
 y <- fluoride$DMFper100
 x <- fluoride$FlouridePPM
-
-#' 
 #' 
 #' Obtain polynomials of x (i.e., the IV):
-## ------------------------------------------------------------------------------------------------
 xsq <- x^2
 xcub <- x^3
 xquar <- x^4
-
-#' 
 #' 
 #' Create a simple plot of y (i.e., the DV) vs x:
-## ------------------------------------------------------------------------------------------------
 plot(x, y, pch = 19, xlab = "Fluoride concentration in water", ylab = "DMF index")
-
 #' 
 #' Fit a simple linear model to the data:
-## ------------------------------------------------------------------------------------------------
 fit1 <- lm(y~x)
-
 #' 
 #' Examine the model by calling the anova function:
-## ------------------------------------------------------------------------------------------------
 anova(fit1)
-
+#' Results: x explains significant variability in y (p<0.001).
 #' 
-#' As shown in the results above, x explains significant variability in y (p<0.001).
-#' 
-#' Fit the model onto the previous graph:
-## ------------------------------------------------------------------------------------------------
-plot(y~x)
+#' Fit the model onto the last graph:
 abline(lm(y~x), col = "red")
-# NB: simply calling the abline function doesn't work. Must use the plot function first, as shown
 
 #' 
-#' Notice that there is some curvature in the data. Perhaps a higher-order model would be more appropriate than a linear one. Let's try fitting a quadratic term:
-## ------------------------------------------------------------------------------------------------
-# to fit a higher-order model, add the higher-order term to the existing model
+#' Notice that there is some curvature in the actual data, so the linear model didn't capture 
+#' ...the data well. Perhaps a higher-order model would be more appropriate. Try fitting a 
+#' ..quadratic term.
+# to fit a higher-order model, add the higher-order term to the existing model:
 fit2 <- lm(y~x+xsq)
 anova(fit2)
-
-#' As shown in the results above, the simple term (x) still explains significant variability in y (p<0.001), and the new complex term (x^2^) explains a significant additional variability (p=0.0002). Now, let's fit the new model onto the graph:
-## ------------------------------------------------------------------------------------------------
+#' Results: the simple term (x) still explains significant variability in y (p<0.001), and 
+#' the new complex term (x^2^) explains a significant additional variability (p=0.0002). Next, 
+#' fit the new model onto the graph:
 xv <- seq(min(x), max(x), 0.01) # xv stands for x values
 yv <- predict(fit2, list(x = xv, xsq = xv^2)) # yv stands for y values
-plot(x,y)
-abline(lm(y~x), col = "red") # NB: this code is for the previous linear form 
 lines(xv, yv, col = "green") # the quadratic form
-
 #' 
-#' As seen in the above plot, the new model now explains some of the curvature in the data. Thus, the quadratic model fits the data better than the linear model.
+#' Results: the quadratic graph depicts some curvature in the data. Thus, the quadratic model 
+#' ..fits the data better than the linear model.
 #' 
 #' Let's try an even more complicated model (by adding a cubic term):
-## ------------------------------------------------------------------------------------------------
 fit3 <- lm(y~x+xsq+xcub)
 anova(fit3)
-
 #' 
-#' The linear and quadratic terms each explain significant variability in y. But the cubic term explains no significant additional variability (p=0.442). Now let's see how everything lines up on the graph:
-## ------------------------------------------------------------------------------------------------
-cubic <- predict(fit3, list(x = xv, xsq = xv^2, xcub = xv^3)) # xv has been defined earlier; y values are now defined as "cubic"
-plot(x,y)
-abline(lm(y~x), col = "red") # NB: this code is for the previous linear form 
-lines(xv, yv, col = "green") # NB: this code is for the previous quadratic form
+#' The linear and quadratic terms each explain significant variability in y. But the cubic 
+#' ..term explains no significant additional variability (p=0.442). Next, check to see how 
+#' ...all three models are laid out in the graph:
+cubic <- predict(fit3, list(x = xv, xsq = xv^2, xcub = xv^3)) 
+# xv has been defined earlier; y values are now defined as "cubic"
 lines(xv, cubic, col = "black") # the cubic form
-
-#' Again, the cubic term doesn't seem to introduce a new information (i.e., no new contribution different from that of the quadratic). So, the quadratic seems to be the best fit.
+#' Results: the cubic term doesn't seem to introduce a new information (i.e., no new 
+#' ..contribution different from that of the quadratic). So, the quadratic model seems to be 
+#' ..the best fit.
 #' 
-#' Let's check the GLM assumption of the models (quadratic vs linear).\
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' Check the GLM assumption of the models (quadratic vs linear)
 #' Assumption 1 -- Homogeneity of the error variance
-## ------------------------------------------------------------------------------------------------
-plot(fit2, which = 1) # the error variance is relatively homogeneous. Compare this to that of the linear model (shown next)
-plot(fit1, which = 1) # the error variance is not homogenous. This GLM assumption is therefore violated, making the linear model an inappropriate fit for the data (as has been shown in previous analyses)
-
+plot(fit2, which = 1)
+# Results: the error variance is relatively homogeneous. Compare this to that of the linear 
+#..model (shown next):
+plot(fit1, which = 1) 
+# the error variance is not homogeneous. This GLM assumption is therefore violated, making 
+# ..the linear model an inappropriate fit for the data (as has been shown in above analyses)
 #' 
 #' Assumption 2 --- normality
-## ------------------------------------------------------------------------------------------------
 plot(fit2, which = 2)
 plot(fit1, which = 2)
-
 #' 
-## ------------------------------------------------------------------------------------------------
 hist(rstandard(fit2))
 hist(rstandard(fit1))
-
-#' 
-#' Results: the quadratic model assumes a more "normal" shape than the linear model, again making the former a better fit.
-#' 
-#' 
-#' --------------------------------------------------------------------------------
-#' --------------------------------------------------------------------------------
-#' --------------------------------------------------------------------------------
+#' Results: the quadratic model assumes a more "normal" shape than the linear model, again 
+#' ..supporting the conclusion that the former is a better fit.
 #' 
 #' 
+#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
 #' # **One-way ANOVA (Analysis of Variance)**
 #' >-- variance: the average squared deviation of all the observations from the population mean \
 #' >-- standard deviation: square root of variance
 #' 
-#' If pairs of samples are repeatedly drawn from the same normally distributed population (or two different normally distributed populations with the same variance), then the ratio s~1~^2^/s~2~^2^ will follow an F-distribution.
+#' If pairs of samples are repeatedly drawn from the same normally distributed population (or 
+#' ..two different normally distributed populations with the same variance), then the ratio 
+#' ..s_1^2/s_2^2 will follow an F-distribution.
 #' 
-#' According to Ronald Fisher, the ANOVA is not a mathematical theorem, but rather a convenient method of arranging the arithmetic. ANOVA: checks if there is a statistically significant difference between two or more groups by testing the difference between the groups' means.
+#' According to Ronald Fisher, the ANOVA is not a mathematical theorem, but rather a convenient 
+#' ..method of arranging the arithmetic. 
+#' ANOVA: checks if there is a statistically significant difference between two or more groups 
+#' ..by testing the difference between the groups' means.
 #' 
 #' ANOVA is usually between a continuous DV and ≥1 categorical IV.
 #' 
-#' Total variation = variation within groups + variation between groups, i.e., SS~total~ = SS~within~ + SS~between~
+#' Total variation = variation within groups + variation between groups, 
+#'    i.e., SS_total = SS_within + SS_between
 #' 
-#' If there is a treatment effect, then one would expect the between-group variation to be higher than the within-group variation. 
+#' If there is a treatment effect, then one would expect the between-group variation to be 
+#' ..higher than the within-group variation. 
 #' 
 #' **p-value** \
-#' >-- general definition: the probability that we would get at least the observed effect if the null hypothesis (NH) were true. \
-#' >-- ANOVA definition: the probability of getting at least the observed F-ratio if the NH were true.
+#' >-- general definition: the probability of getting at least the observed effect if the null 
+#' ..hypothesis (NH) were true.
+#' >-- ANOVA definition: the probability of getting at least the observed F-ratio if the NH 
+#' ..were true.
 #' 
 #' 
 #' ## PRACTICE PROBLEM 
-## ------------------------------------------------------------------------------------------------
-setwd("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS")
 fertData <- read.csv("FertiliserCSV.csv")
-View(fertData)
-
-#' 
+head(fertData)
 #' Use a stripchart function to visualize the data:
-## ------------------------------------------------------------------------------------------------
 # a stripchart produces a 1-dimensional scatter plot
 stripchart(yield ~ as.factor(fertil), vertical = T, pch = 19, data = fertData,
            xlab = "fertilizer type", ylab = "yield in tonnes / ha",
            method = "jitter", jitter = 0.04)
 #* vertical: when set to TRUE, plot is drawn vertically (NB: default is False)
-#* pch (plot character): defines the plot style (19 = sphere/circle, 17 = triangle, 3 = plus, etc.)
+#* pch (plot character): defines the plot style (19 = sphere/circle, 17 = triangle, 
+#* ..3 = plus, etc.)
 #* jitter: applies to overlapping points (???)
-
 #' 
-#' From the graph, the yield from fertilizer 1 appears to be generally higher than yield from the other fertilizers. Let's check whether this is a significant difference.\
+#' From the graph, the yield from fertilizer 1 appears to be generally higher than yield from 
+#' ..the other fertilizers. Check whether this is a significant difference.
 #' First, fit a linear model to the data:
-## ------------------------------------------------------------------------------------------------
 analysis <- lm(yield ~ as.factor(fertil), data = fertData)
-
 #' 
 #' Next, run ANOVA on the model:
-## ------------------------------------------------------------------------------------------------
 anova(analysis)
-
+#' Interpretation of results: assuming the NH were true, the probability of observing an 
+#' ...F-value of at least 5.7024 is 0.008594. So we reject the NH that yield was equal across 
+#' ..the three fertilizer types.
 #' 
-#' Interpretation of results: assuming the NH were true, the probability of observing an F value of at least 5.7024 is 0.008594. So we reject the NH that yield was equal across the three fertilizer types.
 #' 
-#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
 #' ### CHECKING ANOVA ASSUMPTIONS
-#' To confirm the above interpretation, we should check that the assumptions underlying the ANOVA (as applicable to other members of the general linear model) have not been violated.
+#' To confirm the above interpretation, check that the assumptions underlying the ANOVA 
+#' ..(as applicable to other members of the general linear model) have not been violated.
 #' 
 #' #### Assumption 1: Homogeneity of the error variance
-## ------------------------------------------------------------------------------------------------
-plot(analysis, which = 1) #* which=1: instructs R to check assumption 1
-
-#' 
-#' Results: as seen on the graph, the variance is relatively homogeneous across each level of the data (Recall: there are 3 fertilizer levels/types). The assumption is not violated!
+plot(analysis, which = 1)
+#' Results: as seen on the graph, the variance is relatively homogeneous across each level of 
+#' ..the data (Recall: there are 3 fertilizer levels/types). The assumption holds!
 #' 
 #' #### Assumption 2: Normality of the overall distribution of the residuals
-## ------------------------------------------------------------------------------------------------
-plot(analysis, which = 2) # creates a Q-Q plot; which=2: instructs R to check assumption 2
-
-#' 
-#' Results: some points on the graph do not align linearly with the rest (i.e., some skewing is present). To visualize this more directly:
-## ------------------------------------------------------------------------------------------------
+plot(analysis, which = 2) # creates a Q-Q plot 
+#' Results: some points on the graph do not align linearly with the rest (i.e., some skewing 
+#' ..is present). To visualize this more directly:
 sresids <- rstandard(analysis) # obtains the standardized residuals of the model
 hist(sresids) # plots a histogram of the standardized residuals
-
+#' Results: the data is positively-skewed (to the right), but not too much to worry about 
 #' 
-#' Results: the data is positively-skewed (to the right), but not too much to worry about (according to the R LABS tutorial on YouTube)
 #' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
 #' ### POST-HOC ANALYSIS 
-#' From the above analyses, it can be concluded that the fertilizers do not have the same yield. But wherein lies the difference? A post-hoc test addresses this question. An example of a post-hoc test is Tukey's HSD (honestly significant difference) test:
-## ------------------------------------------------------------------------------------------------
+#' From the above analyses, it can be concluded that the fertilizers do not have the same 
+#' ..yield. But wherein lies the difference? A post-hoc test addresses this question. An 
+#' example of a post-hoc test is Tukey's HSD (honest significant difference) test:
 TukeyHSD(aov(analysis))
-
-#' 
-#' Results: the significant difference lies in fertilizer 2 vs. 1.  Other differences (3vs1 and 3vs2) are not statistically significant.
-#' 
-#' --------------------------------------------------------------------------------
-#' --------------------------------------------------------------------------------
-#' --------------------------------------------------------------------------------
+#' Results: the significant difference lies in fertilizer 2 vs. 1.  Other differences 
+#' ..(3vs1 and 3vs2) are not statistically significant.
 #' 
 #' 
+#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
 #' # **Randomized Block Designs (a.k.a two-way ANOVA)**
 #' Basically, in 2-way ANOVA, there are two categorical predictors [1-way ANOVA has only one predictor which is also categorical] and one continuous response  
 #' 
@@ -624,7 +559,7 @@ Anova(results) # run Type III ANOVA
 #' 
 #' ## Practice 
 ## ------------------------------------------------------------------------------------------------
-leprosyCSV <- read.csv("C:/Users/tohaj/Box/Programming/Data Science/DATA SETS/leprosyCSV.csv")
+leprosyCSV <- read.csv("leprosyCSV.csv")
 lep <- leprosyCSV
 View(lep)
 head(lep)
