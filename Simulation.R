@@ -9,7 +9,7 @@
 #' Difference equations are used for when changes occur in discrete time intervals
 #' 
 #' ## 1. Exponential Growth (i.e., a population growing indefinitely)
-#' ### Method A 
+#' ### Method A -- Using difference equation
 #' To calculate exponential growth at discrete time intervals, the difference equation (i.e., 
 #' the discrete-time exponential equation) is:
 #' N_t+1 = N~_ + bN_t - dN_t where N_t+1 = new popn size; N_t = old popn size; b = per capita 
@@ -63,19 +63,14 @@ popgrowth_graph <- function(lambda, N0, gen) {
     return(list(new_pop, graph))
 }
 
-#' 
-## ------------------------------------------------------------------------------------------------
 popgrowth_graph(2.1, 3, 10)
-
-#' 
-## ------------------------------------------------------------------------------------------------
 popgrowth_graph(1.7, 5, 7)
 
 #' 
 #' #### PRACTICE QUESTIONS
-#' 1. A population of amoeba doubles every 10 minutes. Starting with a sample size of 10, what will be the population at the end of 90 minutes?
-## ------------------------------------------------------------------------------------------------
-rep <- 10 # 9 repetitions
+#' 1. A population of amoeba doubles every 10 minutes. Starting with a sample size of 10, what 
+#' will be the population at the end of 90 minutes?
+rep <- 10 # 1 starting population, and 9 growth repetitions
 pop <- numeric(rep)
 pop[1] <- 10
 lmb <- 2 # lambda
@@ -85,13 +80,11 @@ for (t in 1:(rep - 1)) {
 pop
 
 #' 
-## ------------------------------------------------------------------------------------------------
 timeInterval <- seq(0,90,10) # a sequence of 0 to 90, spaced at 10-unit intervals
 plot(timeInterval, pop, xlab = "Time (in mins)", ylab = "Population size (in units)", type = "o")
 
-#' 
-#' 2. Write a function to calculate the exponential growth of some unnamed organism, given the starting pop size, multiplication factor, and number of repetitions.
-## ------------------------------------------------------------------------------------------------
+#' 2. Write a function to calculate the exponential growth of some unnamed organism, given the 
+#' starting pop size, multiplication factor, and number of repetitions.
 expo <- function(size, mult_factor, cycles) {
     for (t in 1:(cycles - 1)) {
         size[t + 1] <- size[t] * mult_factor
@@ -100,31 +93,18 @@ expo <- function(size, mult_factor, cycles) {
     return(list(size, graphing))
 }
 
-#' 
-## ------------------------------------------------------------------------------------------------
 expo(2, 3, 7)
-
-#' 
-#' 
-## ------------------------------------------------------------------------------------------------
 expo(5, 2, 10)
-
-#' 
-#' 
-## ------------------------------------------------------------------------------------------------
 expo(3, 4, 20)
 
 #' 
 #' 
-#' 
-#' 
-#' 
-#' 
-#' ### Method B - Using explicit solution:
-#' N~t~ = (λ ^ t) * N~0~ [where **N~t~** = new pop size, **t** = time interval, **N~0~** = starting population size]
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+#' ### Method B -- Using explicit solution:
+#' N_t = (λ ^ t) * N_0 [where N_t = new pop size, t = time interval, N_0 = starting population]
 #' 
 #' Example: Calculate new pop sizes at 10 time intervals for a pop starting at n=3
-## ------------------------------------------------------------------------------------------------
 lambda <- 2.1
 t <- 0:10
 N0 <- 3
@@ -135,21 +115,17 @@ plot(t, Nt, type = "o", xlab = "Time", ylab = "Popn size")
 #' 
 #' 
 #' 
-#' 
-#' 
-#' 
-#' 
-#' 
-#' 
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #' ## 2. Logistic Growth (i.e., a geometric growth followed by stability)
-#' The Discrete-Time logistic equation (difference equation for logistic growth) is: \
-#' N~t+1~ = N~t~ + rN~t~ (1 - [N~t~/K]). \
-#' **r** is per capita birth rate minus per capita death rate; **K** is carrying capacity \
-#' NB: the final expression (in parenthesis) is simply added to the difference equation for exponential growth. \
-#' As with exponential growth, log growth difference equation is solved/applied using simulation (For loops and Functions)
+#' The Discrete-Time logistic equation (difference equation for logistic growth) is:
+#' N_t+1~ = N_t + rN_t (1 - [N_t/K]). \
+#' r = per capita birth rate minus per capita death rate; K = carrying capacity
+#' NB: This equation simply adds the the last expression (in parenthesis) to the difference 
+#' equation for exponential growth. As with exponential growth, log growth difference equation 
+#' is solved/applied using simulation (For loops and Functions)
 #' 
 #' Example:
-## ------------------------------------------------------------------------------------------------
 dlogistic <- function(k, r, n, generations) {
     for (x in 1:(generations - 1)) {
         n[x + 1] <- n[x] + (r * n[x]) * (1 - (n[x] / k))
@@ -159,24 +135,30 @@ dlogistic <- function(k, r, n, generations) {
     return(list(new_popns, output))
 }
 
-#' 
-## ------------------------------------------------------------------------------------------------
 dlogistic(k = 1000, r = 1.5,  n = 10, generations = 30)
 
 #' 
 #' 
 #' 
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #' # **DETERMINISTIC CHAOS**
-#' A population growth dynamic may exhibit: \
-#' 1-point cycle: same population size repeated continuously \
-#' 2-point cycle: two populations repeated at certain intervals \
-#' 3-point cycle \
-#' ...and so on. \
-#' However, a population may exhibit an irregular, unpredictable pattern in growth. It is thus said to be in a "chaotic" state. Hence, deterministic CHAOS.
+#' A population growth dynamic may exhibit:
+#' 1-point cycle: same population size repeated continuously
+#' 2-point cycle: two populations repeated at certain intervals
+#' 3-point cycle
+#' ...and so on. 
+#' However, a population may also exhibit an irregular, unpredictable pattern of growth. It is 
+#' thus said to be in a "chaotic" state. Hence, deterministic CHAOS.
 #' 
-#' The difference equation here is: \
-#' X~t+1~ = r * X~t~ * (1-X~t~) [where: **X~t+1~** is the new ratio of existing population to maximum possible population; **X~t~** is the old ratio of existing population to maximum possible population; **r** is per capita birth rate minus per capita death rate
-## ------------------------------------------------------------------------------------------------
+#' The difference equation here is:
+#' X_t+1~ = r * X_t * (1-X~t~) [where: X_t+1 = the new ratio of existing population to maximum 
+#'...possible population; X_t = the old ratio of existing population to maximum possible 
+#'..population; r is per capita birth rate minus per capita death rate
 canlogistic <- function(r, x0, generations) {
     for (i in 1:(generations - 1)) {
         x0[i + 1] <- r * x0[i] * (1 - x0[i])
@@ -185,8 +167,6 @@ canlogistic <- function(r, x0, generations) {
     return(pop_ratios)
 }
 
-#' 
-## ------------------------------------------------------------------------------------------------
 generations <- 250
 xt_1 <- canlogistic(2, 0.9, 250)
 xt_2 <- canlogistic(3.5, 0.9, 250)
