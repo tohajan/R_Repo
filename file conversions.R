@@ -9,6 +9,10 @@ library(knitr)
 # purl("Data Handling & Graphics.Rmd", output = "Data Handling + Graphics.R", documentation = 2) 
 # purl("Simulation.Rmd", output = "Simulation.R", documentation = 2)
 # purl("Statistical Modeling.Rmd", output = "Statistical Modeling.R", documentation = 2)
+# purl("C:/Users/tohaj/Desktop/R_Practice/Tidyverse/Descriptive and Exploratory.Rmd", 
+#      output = "C:/Users/tohaj/Desktop/R_Practice/Tidyverse/Descriptive and Exploratory.R", 
+#      documentation = 2)
+
 
 
 
