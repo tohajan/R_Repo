@@ -12,10 +12,13 @@ library(knitr)
 # purl("C:/Users/tohaj/Desktop/R_Practice/Tidyverse/Descriptive and Exploratory.Rmd", 
 #      output = "C:/Users/tohaj/Desktop/R_Practice/Tidyverse/Descriptive and Exploratory.R", 
 #      documentation = 2)
-purl("C:/Users/tohaj/Desktop/R_Practice/Tidyverse/Linear Regression.Rmd",
-     output = "C:/Users/tohaj/Desktop/R_Practice/Tidyverse/Linear Regression.R",
-     documentation = 2)
+# purl("C:/Users/tohaj/Desktop/R_Practice/Tidyverse/Linear Regression.Rmd",
+#      output = "C:/Users/tohaj/Desktop/R_Practice/Tidyverse/Linear Regression.R",
+#      documentation = 2)
 
+# purl("C:/Users/tohaj/Desktop/R_Practice/Tidyverse/Multiple Linear Regression.Rmd",
+#      output = "C:/Users/tohaj/Desktop/R_Practice/Tidyverse/Multiple Linear Regression.R",
+#      documentation = 2)
 
 
 # 2. MAKE AN .Rmd DOC RUN IN GITHUB (see complete details 
