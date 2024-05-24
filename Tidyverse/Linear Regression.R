@@ -1,8 +1,6 @@
 #' ---
 #' title: "Linear Regression"
 #' author: "Toheeb"
-#' date: "2023-08-30"
-#' output: html_document
 #' ---
 #' 
 #' # Linear Regression
