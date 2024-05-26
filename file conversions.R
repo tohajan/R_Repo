@@ -21,6 +21,9 @@ library(knitr)
 # purl("C:/Users/tohaj/Desktop/R_Practice/Tidyverse/Beyond Linear Regression.Rmd",
 #      output = "C:/Users/tohaj/Desktop/R_Practice/Tidyverse/Beyond Linear Regression.R",
 #      documentation = 2)
+# purl("C:/Users/tohaj/Desktop/R_Practice/Tidyverse/Common Statistical Tests.Rmd",
+#      output = "C:/Users/tohaj/Desktop/R_Practice/Tidyverse/Common Statistical Tests.R",
+#      documentation = 2)
 
 # 2. MAKE AN .Rmd DOC RUN IN GITHUB (see complete details 
 # at https://gist.github.com/JoshuaTPierce/b919168421b40e06481080eb53c3fb2f):
