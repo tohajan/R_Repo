@@ -28,6 +28,7 @@
 set.seed(34) 
 soda_ounces <- rnorm(100, mean = 12, sd = 0.04)
 head(soda_ounces)
+# library("tibble")
 soda_ounces <-as_tibble(soda_ounces)
 
 head(soda_ounces)
@@ -76,7 +77,7 @@ print(soda_ounces, n=25)
 #' Finally, the get_confidence_interval(), as you might guess, calculates a confidence interval.
 #' 
 #' Now we will use these functions on our data.
-install.packages("infer")
+# install.packages("infer")
 library(infer)
 set.seed(342)
 CI <-soda_ounces %>%
