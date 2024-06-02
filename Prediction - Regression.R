@@ -44,7 +44,7 @@ head(testing_iris)
 #' To include all predictors, use a period like so:
 #'        outcome_variable_name ~ .
 #' 
-#' E.g.: predict Sepal.Length in the training data based on Sepal.Width and the Species. Thus, 
+#' E.g.: predict Sepal.Length in the training data based on Sepal.Width and Species. Thus, 
 #' Sepal.Length is the outcome variable and Sepal.Width and Species are the predictor variables.
 # install.packages("recipes")
 library(recipes)
@@ -87,7 +87,7 @@ summary(first_recipe)
 #'  10. Row operations– performing functions on the values within the rows (ex. rearranging, 
 #'        filtering, imputing)
 #'  11. Checking functions – Sanity checks to look for missing values, to look at the variable 
-#'        classes etc.
+#'        classes, etc.
 #'  
 #' All of the step functions look like step_*() with the * replaced with a name, except for 
 #' the check functions which look like check_*().
@@ -180,10 +180,170 @@ glimpse(preproc_train)
 #' you expect.
 baked_test_pm <- recipes::bake(prepped_rec, new_data = testing_iris)
 glimpse(baked_test_pm)
-#' Great! Now back to the typical steps.
+#' Great! Now, back to the typical steps.
 #' 
 #' 
 #' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' STEP 4: Specify the model (using parsnip)
+#' So far we have used the packages rsample to split the data and recipes to assign variable 
+#' types, and to specify and prep our preprocessing (as well as to optionally extract the 
+#' preprocessed data).
+#' 
+#' We will now use the parsnip package to specify our model. There are four things we need to 
+#' define about our model:
+#'    1. The type of model (using specific functions in parsnip like rand_forest(), 
+#'      logistic_reg() etc.)
+#'    2. The package or engine that we will use to implement the type of model selected (using 
+#'      the set_engine() function)
+#'    3. The mode of learning - classification or regression (using the set_mode() function)
+#'    4. Any arguments necessary for the model/package selected (using the set_args()function 
+#'      - for example the mtry = argument for random forest which is the number of variables to 
+#'      be used as options for splitting at each tree node)
+#'  
+#' Let’s walk through these steps one by one. For our case, we are going to start our analysis 
+#' with a linear regression but we will demonstrate how we can try different models.
+#' The first step is to define what type of model we would like to use.
+#' 
+#' We want to do a linear regression so we will use the linear_reg() function of the parsnip 
+#' package:
+# install.packages("parsnip")
+library(parsnip)
+Lin_reg_model <- parsnip::linear_reg()
+Lin_reg_model 
+#' 
+#' OK. So far, all we have defined is that we want to use a linear regression. Now let’s tell 
+#' parsnip more about what we want.
+#' We would like to use the ordinary least squares method to fit our linear regression. So we 
+#' will tell parsnip that we want to use the lm package to implement our linear regression 
+#' (there are many options actually such as rstan, glmnet, keras, and sparklyr).
+#' We will do so by using the set_engine() function of the parsnip package:
+Lin_reg_model <- 
+  Lin_reg_model  %>%
+  parsnip::set_engine("lm")
+
+Lin_reg_model
+#' 
+#' Some packages can do either classification or regression, so it is a good idea to specify 
+#' which mode you intend to perform. Here, we aim to predict a continuous variable, thus we 
+#' want to perform a regression analysis. You can do this with the set_mode() function of the 
+#' parsnip package, by using either set_mode("classification") or set_mode("regression").
+Lin_reg_model <- 
+  Lin_reg_model %>%
+  parsnip::set_engine("lm") %>%
+  parsnip::set_mode("regression")
+
+Lin_reg_model
+#' 
+#' 
+#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' STEP 5: Fit the model 
+#' We can use the parsnip package with a newer package called workflows to fit our model.
+#' 
+#' The workflows package allows us to keep track of both our preprocessing steps and our model 
+#' specification. It also allows us to implement fancier optimizations in an automated way and 
+#' it can also handle post-processing operations.
+#' 
+#' We begin by creating a workflow using the workflow() function in the workflows package.
+#' 
+#' Next, we use add_recipe() (our preprocessing specifications) and we add our model with the 
+#' add_model() function – both functions from the workflows package.
+#' 
+#' Note: We do not need to actually prep() our recipe before using workflows - this was just 
+#' optional so we could take a look at the preprocessed data!
+#' 
+# install.packages("workflows")
+library(workflows)
+iris_reg_wflow <-workflows::workflow() %>%
+  workflows::add_recipe(first_recipe) %>%
+  workflows::add_model(Lin_reg_model)
+iris_reg_wflow 
+#' 
+#' Ah, nice. Notice how it tells us about both our preprocessing steps and our model 
+#' specifications.
+#' Next, we “prepare the recipe” (or estimate the parameters) and fit the model to our training 
+#' data all at once. Printing the output, we can see the coefficients of the model.
+iris_reg_wflow_fit <- parsnip::fit(iris_reg_wflow, data = training_iris)
+iris_reg_wflow_fit
+#' 
+#' 
+#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' STEP 6: Assessing the model performance
+#' Recall that often for regression analysis we use the RMSE to assess model performance.
+#' To get this we first need to get the predicted (also called “fitted”) values.
+#' We can get these values using the pull_workflow_fit() function of the workflows package. 
+#' These values are in the $fit$fitted.values slot of the output. Alternatively, we can use 
+#' the predict() function with the workflow and the training data specified as the new_data.
+library(workflows)
+wf_fit <- iris_reg_wflow_fit %>% 
+  pull_workflow_fit()
+
+head(wf_fit$fit$fitted.values) 
+#' 
+predict(iris_reg_wflow_fit, new_data = training_iris) 
+#' 
+#' To get more information about the prediction for each sample, we can use the augment() 
+#' function of the broom package. This requires using the preprocessed training data from 
+#' bake() (or with previous versions juice()), as well as the predicted values from either of 
+#' the two previous methods.
+wf_fitted_values <- 
+  broom::augment(wf_fit$fit, data = preproc_train) %>% 
+  select(Sepal.Length, .fitted:.std.resid)
+
+head(wf_fitted_values)
+#' 
+#' Nice, now we can see what the original value for Sepal.Length right next to the predicted 
+#' .fitted value, as well as standard errors and other metrics for each value.
+#' Now we can use the rmse() function of the yardstick package to compare the truth, which is 
+#' the Sepal.Length variable, to the predicted or estimate variable which in the previous 
+#' output is called .fitted.
+install.packages("yardstick")
+library(yardstick)
+yardstick::rmse(wf_fitted_values, 
+                truth = Sepal.Length, 
+                estimate = .fitted)
+#' 
+#' We can see that our RMSE was 0.447. This is fairly low, so our model did pretty well.
+#' We can also make a plot to visualize how well we predicted Sepal.Length:
+library(ggplot2)
+wf_fitted_values %>%
+  ggplot(aes(x = Sepal.Length, y = .fitted)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs( x = "True Sepal Length", y = "Predicted Sepal Length")
+#' 
+#' We can see that overall our model predicted the sepal length fairly well, as the predicted 
+#' values are fairly close to the true values. We can also see that the predictions were 
+#' similar to the truth for the full range of true sepal length values.
+#' 
+#' Typically we might modify our preprocessing steps or try a different model until we were 
+#' satisfied with the performance on our training data. Assuming we are satisfied, we could 
+#' then perform a final assessment of our model using the testing data.
+#' 
+#' With the workflows package, we can use the splitting information for our original data 
+#' split_iris to fit the final model on the full training set and also on the testing data 
+#' using the last_fit() function of the tune package. No preprocessing steps are required.
+#' 
+#' We can do this by using the last_fit() function of the tune package.
+install.packages("tune")
+library(tune)
+overallfit <-iris_reg_wflow %>%
+  tune::last_fit(split_iris)
+
+overallfit
+#' 
+#' We can then use the collect_metrics() function of the tune package to get the RMSE:
+collect_metrics(overallfit)
+#' With an RMSE of 0.403, we can see that our RMSE is pretty similar for the testing data as 
+#' well.
 #' 
 #' 
 #' 
