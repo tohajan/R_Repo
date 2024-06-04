@@ -1,5 +1,6 @@
 #' **Predicting a categorical variable (Classification)**
-#' 
+install.packages("tidymodels")
+library(tidymodels)
 #' Now we are going to show an example of using the tidymodels packages to perform prediction 
 #' of a categorical variable.
 #' 
@@ -210,8 +211,8 @@ wf_fit_cat$fit$variable.importance
 #' values using the predict() function, as these are not in the fit output.
 pred_species<-predict(iris_cat_wflow_fit, new_data = training_iris)
 
-yardstick::accuracy(training_iris, 
-                    truth = Species, estimate = pred_species$.pred_class)
+# library(yardstick)
+# yardstick::accuracy(training_iris, truth = Species, estimate = pred_species$.pred_class)
 #' This code produces the following error message:
 #'   Error in `yardstick::accuracy()`:
 #'   ! Can't subset columns that don't exist.
@@ -221,5 +222,95 @@ yardstick::accuracy(training_iris,
 #'  overflow that suggests the error might be due to how the recipe was prepared. So, I 
 #'  recreated the recipe (see details in the "creating recipe" section above)
 #'  It didn't work! The error persists. Try something else...???
+#' 
+#' According to the documentation (https://yardstick.tidymodels.org/reference/accuracy.html), 
+#' for the accuracy function, the columns specified by the truth and estimate arguments must
+#' be contained in the preceding dataframe argument. In the current example, only the truth
+#' argument meets that criteria (i.e., Species is a column in the data), the data has no 
+#' column containing the values specified in the estimate argument.
+#' 
+#' To correct this: I created a new data containing all the columns in training iris and a new
+#' column for the predicted values
+#' 
+pseudo_training <- training_iris
+pseudo_training$predicted.species <- pred_species$.pred_class
+head(pseudo_training)
+
+yardstick::accuracy(pseudo_training, truth = Species, estimate = predicted.species)
+#' It worked!!! Got the same accuracy as the Coursera tutorial = 0.97
+#' Interpretation: 97% of the time, the model correctly predicted the right species.
+#' We can also see which species were correctly predicted using count function:
+count(pseudo_training, Species)
+
+count(pseudo_training, predicted.species)
+#' Results: one extra versicolor iris was predicted, and one fewer virginica iris.
+#' 
+#' To see exactly which rows resulted in incorrect predictions, we can bind the predicted 
+#' species to the training data like so. This can be helpful to see if there is something 
+#' particular about the incorrectly predicted values that might explain why they are 
+#' incorrectly predicted.
+#' PS: I have created a similar data above, called pseudo_training
+predicted_and_truth <-bind_cols(training_iris, 
+                                predicted_species = pull(pred_species, .pred_class))
+head(predicted_and_truth)
+#' 
+#' the exact rows with actual values different from predicted values:
+predicted_and_truth[predicted_and_truth$Species != predicted_and_truth$predicted_species, ]
+#' 
+#' -----------------------------------------------------------------------------
+#' 
+#' However, to fit the model to our cross validation folds we can use the fit_resamples() 
+#' function of the tune package, by specifying our workflow object and the cross validation 
+#' fold object we created somewhere above. 
+#' library(tune)
+set.seed(122)
+resample_fit <- tune::fit_resamples(iris_cat_wflow, vfold_iris)
+#' 
+#' We can now take a look at various performance metrics based on the fit of our cross 
+#' validation “resamples”.
+#' To do this we will use the collect_metrics function of the tune package. This will show us 
+#' the mean of the accuracy estimate of the 4 different cross validation folds.
+resample_fit
+
+tune::collect_metrics(resample_fit)
+#' The accuracy appears to be 95 percent (a 2% drop from the previous 97%). Often the 
+#' performance will be reduced using cross validation.
+#' 
+#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' TUNING
+#' 
+#' Let’s see how things change when we now tune a hyperparameter. We want to tune the min_n 
+#' argument to tune for the minimum number of data points for each node. The arguments may 
+#' vary for the engine that you are using. We need to specify this when we fit the model 
+#' using the tune() function like so:
+set.seed(122)
+library(tune)
+cat_model_tune <- parsnip::decision_tree(min_n = tune()) %>%
+  parsnip::set_mode("classification") %>%
+  parsnip::set_engine("rpart") 
+cat_model_tune
+#' 
+#' Now we can create a new workflow using the categorical recipe and the tuning model:
+iris_cat_wflow_tune <-workflows::workflow() %>%
+  workflows::add_recipe(cat_recipe) %>%
+  workflows::add_model(cat_model_tune)
+#' 
+#' We can use the tune_grid() function of the tune() package to use the workflow and fit the 
+#' vfold_iris cross validation samples of our training data to test out a number of different 
+#' values for the min_n argument for our model. The grid() argument specifies how many 
+#' different values to try out.
+resample_fit2 <-tune::tune_grid(iris_cat_wflow_tune, resamples = vfold_iris, grid = 4)
+#' 
+#' Again we can use the collect_metrics() function to get the accuracy. Or, we can use the 
+#' show_best() function of the tune package to see the min_n values for the top performing 
+#' models (those with the highest accuracy).
+tune::collect_metrics(resample_fit)
+
+tune::show_best(resample_fit, metric = "accuracy")
+#' 
+#' 
 #' 
 #' 
