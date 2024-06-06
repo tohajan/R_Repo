@@ -1,5 +1,6 @@
 #' **Predicting a continuous variable (Regression)**
 #' 
+library(tidymodels)
 #' -----------------------------------------------------------------------------
 #' -----------------------------------------------------------------------------
 #' -----------------------------------------------------------------------------
@@ -288,7 +289,7 @@ wf_fit <- iris_reg_wflow_fit %>%
 
 head(wf_fit$fit$fitted.values) 
 #' 
-predict(iris_reg_wflow_fit, new_data = training_iris) 
+predict(iris_reg_wflow_fit, new_data = training_iris) #shouldn't this be the testing data?
 #' 
 #' To get more information about the prediction for each sample, we can use the augment() 
 #' function of the broom package. This requires using the preprocessed training data from 
@@ -303,9 +304,9 @@ head(wf_fitted_values)
 #' Nice, now we can see what the original value for Sepal.Length right next to the predicted 
 #' .fitted value, as well as standard errors and other metrics for each value.
 #' Now we can use the rmse() function of the yardstick package to compare the truth, which is 
-#' the Sepal.Length variable, to the predicted or estimate variable which in the previous 
-#' output is called .fitted.
-install.packages("yardstick")
+#' the Sepal.Length variable, to the predicted or estimate variable which in the output above 
+#' is called .fitted.
+# install.packages("yardstick")
 library(yardstick)
 yardstick::rmse(wf_fitted_values, 
                 truth = Sepal.Length, 
@@ -333,7 +334,7 @@ wf_fitted_values %>%
 #' using the last_fit() function of the tune package. No preprocessing steps are required.
 #' 
 #' We can do this by using the last_fit() function of the tune package.
-install.packages("tune")
+# install.packages("tune")
 library(tune)
 overallfit <-iris_reg_wflow %>%
   tune::last_fit(split_iris)
