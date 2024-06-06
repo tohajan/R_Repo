@@ -1,5 +1,5 @@
 #' **PREDICTION - CASE STUDY #1 (COURSERA)**
-#' 
+library(tidymodels)
 #' A variety of different sources contribute different types of pollutants to what we call air 
 #' pollution.
 #'    Gaseous - Carbon Monoxide (CO), Ozone (O3), Nitrogen Oxides(NO, NO2), Sulfur Dioxide (SO2)
@@ -67,6 +67,45 @@ library(dplyr)
 pm %>%
   glimpse()
 #' 
+#' We can see that there are 876 monitors (rows) and that we have 50 total variables (columns) 
+#' - one of which is the outcome variable. In this case, the outcome variable is named value.
+#' 
+#' Notice that some of the variables that we would think of as factors (or categorical data) 
+#' are currently of class character as indicated by the <chr> just to the right of the column 
+#' names/variable names in the glimpse() output. This means that the variable values are 
+#' character strings, such as words or phrases.
+#' 
+#' The other variables are of class <dbl>, which stands for double precision which indicates 
+#' that they are numeric and that they have decimal values. In contrast, one could have integer 
+#' values which would not allow for decimal numbers.
+#' 
+#' Another common data class is factor which is abbreviated like this: <fct>. A factor is 
+#' something that has unique levels but there is no appreciable order to the levels. For 
+#' example we can have a numeric value that is just an id that we want to be interpreted as 
+#' just a unique level and not as the number that it would typically indicate. This would be 
+#' useful for several of our variables:
+#'    1. the monitor ID (id)
+#'    2. the Federal Information Processing Standard number for the county where the monitor 
+#'      was located (fips)
+#'    3. the zip code tabulation area (zcta)
+#' None of the values actually have any real numeric meaning, so we want to make sure that R 
+#' does not interpret them as if they do.
+#' So let’s convert these variables into factors. We can do this using the across() function of 
+#' the dplyr package and the as.factor() base function. The across() function has two main 
+#' arguments: (i) the columns you want to operate on and (ii) the function or list of functions 
+#' to apply to each column.
+library(magrittr)
+pm <-pm %>%
+  mutate(across(c(id, fips, zcta), as.factor)) 
+
+glimpse(pm)
+#' Great! Now we can see that these variables are now factors as indicated by <fct> after the 
+#' variable name.
+#' 
+#' The skim() function of the skimr package is also really helpful for getting a general sense 
+#' of your data. By design, it provides summary statistics about variables in the dataset:
+library(skimr)
+skim(pm)
 #' 
 #' 
 #' 
