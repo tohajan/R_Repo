@@ -1,11 +1,12 @@
 #' **Predicting a categorical variable (Classification)**
-install.packages("tidymodels")
+# install.packages("tidymodels")
 library(tidymodels)
 #' Now we are going to show an example of using the tidymodels packages to perform prediction 
 #' of a categorical variable.
 #' 
-#' Again, we will use the iris dataset. However, this time we will predict the identity of the 
-#' flower species (which is categorical) based on the other variables.
+#' Again, we will use the iris dataset (as in the regression-prediction example). However, this 
+#' time we will predict the identity of the flower species (which is categorical) based on all 
+#' other variables in the data set.
 #' 
 #' We have already split our data into testing and training sets, so we don’t necessarily need 
 #' to do that again. (PS: See the file, "Prediction - Regression.R")
@@ -37,7 +38,7 @@ count(testing_iris, Species)
 #' will work well with a variety of new datasets. Recall that using an independent validation 
 #' set is part of what we call out-of-sample testing to get a sense of how our model might 
 #' perform with new datasets. Cross validation helps us to get a sense of this using our 
-#' training data, so that we can build a better more generalizable model.
+#' training data, so that we can build a better, more generalizable model.
 #' 
 #' By creating subsets of the data, we can test the model performance on each subset which is 
 #' also a type of out-of-sample testing, as we are not using the entire training dataset, but 
@@ -79,7 +80,7 @@ count(testing_iris, Species)
 #' another type of cross validation on just the newly defined training set that we just 
 #' created.
 #' 
-#' There are many cross validation methods and most can be easily implemented using the 
+#' There are many cross validation methods, and most can be easily implemented using the 
 #' rsample package. Here, we will use a very popular method called either v-fold or k-fold 
 #' cross validation.
 #' 
@@ -147,18 +148,24 @@ head(as.data.frame(first_fold, data = "assessment")) # test set of this fold
 #' we want to use the rest of the variables as predictors. Thus we will create a new 
 #' cat_recipe where we are using a categorical variable as the outcome.
 library(recipes)
-# cat_recipe <- training_iris %>%
-#   recipe(Species ~ .)
+cat_recipe <- training_iris %>%
+  recipe(Species ~ .)
 #' The above approach may have led to an error in the later prediction (see details in the
 #' lines following the yardstick() function under the "Model Assessment" section below).
 #' 
+#' ..........................................................................................
 #' Debugging: recreate the recipe by assigning roles using the update_role function:
-cat_recipe <- recipe(training_iris) %>%
-  recipes::update_role(Species, new_role = "outcome") %>%
-  recipes::update_role(Sepal.Length, new_role = "predictor") %>%
-  recipes::update_role(Sepal.Width, new_role = "predictor") %>%
-  recipes::update_role(Petal.Length, new_role = "predictor") %>%
-  recipes::update_role(Petal.Width, new_role = "predictor")
+# cat_recipe <- recipe(training_iris) %>%
+#   recipes::update_role(Species, new_role = "outcome") %>%
+#   recipes::update_role(Sepal.Length, new_role = "predictor") %>%
+#   recipes::update_role(Sepal.Width, new_role = "predictor") %>%
+#   recipes::update_role(Petal.Length, new_role = "predictor") %>%
+#   recipes::update_role(Petal.Width, new_role = "predictor")
+#' 
+#' Outcome: the error persists; recipe prepping seems to not be the problem. The problem was
+#' eventually fixed in the "Model Assessment" section below
+#' ..........................................................................................
+#' 
 #' 
 #' This time we will also not have any preprocessing steps for simplicity sake, thus our 
 #' recipe is actually already finished.
@@ -199,10 +206,10 @@ names(wf_fit_cat)
 #' The output is a bit different for categorical variables. We can also see variable 
 #' importance from the model fit, which shows which variables were most important for 
 #' classifying the data values. This lists a score for each variable which shows the decrease 
-#' in error when splitting by this variable relative to others.
+#' in error when splitting by this variable relative to others:
 wf_fit_cat$fit$variable.importance
 #' 
-#' We can see that Petal.Length (its value, 60.85957, is the highest) was the most important 
+#' Results: Petal.Length (its value, 60.85957, is the highest) was the most important 
 #' for predicting Species.
 #' 
 #' Recall that since we are using a categorical outcome variable, we want to use accuracy to 
@@ -307,9 +314,21 @@ resample_fit2 <-tune::tune_grid(iris_cat_wflow_tune, resamples = vfold_iris, gri
 #' Again we can use the collect_metrics() function to get the accuracy. Or, we can use the 
 #' show_best() function of the tune package to see the min_n values for the top performing 
 #' models (those with the highest accuracy).
-tune::collect_metrics(resample_fit)
+tune::collect_metrics(resample_fit2)
 
-tune::show_best(resample_fit, metric = "accuracy")
+tune::show_best(resample_fit2, metric = "accuracy")
+#' Results: the model with min_n=10 has the highest accuracy (0.96)
+#' 
+#' 
+#' Try with a different value for the grid argument
+resample_fit3 <-tune::tune_grid(iris_cat_wflow_tune, resamples = vfold_iris, grid = 10)
+
+tune::collect_metrics(resample_fit3)
+
+tune::show_best(resample_fit3, metric = "accuracy")
+#' Results: the models with min_n values of 9 and 5 have the highest accuracy (each has 0.96)
+#' 
+#' 
 #' 
 #' 
 #' 
