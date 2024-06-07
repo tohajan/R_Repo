@@ -107,5 +107,263 @@ glimpse(pm)
 library(skimr)
 skim(pm)
 #' 
+#' Notice how there is a column called n_missing about the number of values that are missing. 
+#' This is also indicated by the complete_rate variable (or missing/number of observations).
+#' In this dataset, it looks like there are no missing data.
+#' 
+#' Also notice how the function provides separate tables of summary statistics for each data 
+#' type: character, factor and numeric.
+#' Next, the n_unique column shows us the number of unique values for each of the columns. We 
+#' can see that there are 49 states represented in the data.
+#' We can see that for many variables there are many low values as the distribution shows two 
+#' peaks, one near zero and another with a higher value.
+#' This is true for the imp variables (measures of development), the nei variables (measures 
+#' of emission sources) and the road density variables.
+#' We can also see that the range of some of the variables is very large, in particular the 
+#' area and population related variables.
+#' Let’s take a look to see which states are included using the distinct() function of the 
+#' dplyr package:
+pm %>% 
+  distinct(state) 
+#' 
+#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' EVALUATE CORRELATION
+#' In prediction analyses, it is also useful to evaluate if any of the variables are 
+#' correlated. Why should we care about this?
+#' If we are using a linear regression to model our data then we might run into a problem 
+#' called multicollinearity which can lead us to misinterpret what is really predictive of 
+#' our outcome variable. This phenomenon occurs when the predictor variables actually predict 
+#' one another.
+#' 
+#' Another reason we should look out for correlation is that we don’t want to include 
+#' redundant variables. This can add unnecessary noise to our algorithm causing a reduction in 
+#' prediction accuracy and it can cause our algorithm to be unnecessarily slower. Finally, it 
+#' can also make it difficult to interpret what variables are actually predictive.
+#' 
+#' Intuitively, we can expect some of our variables to be correlated.
+#' 
+#' The corrplot package is another option to look at correlation among possible predictors, 
+#' and particularly useful if we have many predictors.
+#' 
+#' First, we calculate the Pearson correlation coefficients between all features pairwise 
+#' using the cor() function of the stats package (which is loaded automatically). Then we use 
+#' the corrplot::corrplot() function. First we need to select only the numeric variables using 
+#' dplyr.
+install.packages("corrplot")
+library(corrplot)
+PM_cor <- cor(pm %>% dplyr::select_if(is.numeric))
+corrplot::corrplot(PM_cor, tl.cex = 0.5)
+#' 
+#' We can see that the development variables (imp) variables are correlated with each other as 
+#' we might expect. We also see that the road density variables seem to be correlated with 
+#' each other, and the emission variables seem to be correlated with each other.
+#' 
+#' Also notice that none of the predictors are highly correlated with our outcome variable 
+#' (value).
+#' Now that we have a sense of what our data are, we can get started with building a machine 
+#' learning model to predict air pollution.
+#' 
+#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' SPLITTING THE DATA
+set.seed(1234)
+pm_split <- rsample::initial_split(data = pm, prop = 2/3)
+pm_split
+#' We can see the number of monitors in our training, testing, and original data by typing in 
+#' the name of our split object. The result will look like this: <training data sample number, 
+#' testing data sample number, original (total) sample number>
+#' Importantly the initial_split() function only determines what rows of our pm data frame 
+#' should be assigned for training or testing, it does not actually split the data.
+#' 
+#' To extract the testing and training data we can use the training() and testing() functions 
+#' also of the rsample package.
+train_pm <- rsample::training(pm_split)
+test_pm <- rsample::testing(pm_split)
+#' Great!
+#' Now let’s make a recipe!
+#' 
+#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' MAKING A RECIPE
+#' Now with our data, we will start by making a recipe for our training data. If you recall, 
+#' the continuous outcome variable is value (the average annual gravimetric monitor PM2.5 
+#' concentration in ug/m3). Our features (or predictor variables) are all the other variables 
+#' except the monitor ID, which is an id variable.
+#' The reason not to include the id variable is because this variable includes the county 
+#' number and a number designating which particular monitor the values came from (of the 
+#' monitors there are in that county). Since this number is arbitrary and the county 
+#' information is also given in the data, and the fact that each monitor only has one value in 
+#' the value variable, nothing is gained by including this variable and it may instead 
+#' introduce noise. However, it is useful to keep this data to take a look at what is 
+#' happening later. We will show you what to do in this case in just a bit.
+#' 
+#' In the simplest case, we might use all predictors like this:
+simple_rec <- train_pm %>%
+  recipes::recipe(value ~ .)
+
+simple_rec
+#' 
+#' Now, let’s get back to the id variable. Instead of including it as a predictor variable, 
+#' we could also use the update_role() function of the recipes package.
+simple_rec <- train_pm %>%
+  recipes::recipe(value ~ .) %>%
+  recipes::update_role(id, new_role = "id variable")
+
+simple_rec
+#' 
+#' This link (https://recipes.tidymodels.org/reference/index.html) and this link 
+#' (https://cran.r-project.org/web/packages/recipes/recipes.pdf) show the many options for 
+#' recipe step functions.
+#' 
+#' There are several ways to select what variables to apply steps to:
+#'    1. Using tidyselect methods: contains(), matches(), starts_with(), ends_with(), 
+#'  everything(), num_range()
+#'    2. Using the type: all_nominal(), all_numeric() , has_type()
+#'    3. Using the role: all_predictors(), all_outcomes(), has_role()
+#'    4. Using the name - use the actual name of the variable/variables of interest
+#' 
+#' Let’s try adding some steps to our recipe.
+#' We want to dummy encode our categorical variables so that they are numeric as we plan to 
+#' use a linear regression for our model.
+#' 
+#' We will use the one-hot encoding means that we do not simply encode our categorical 
+#' variables numerically, as our numeric assignments can be interpreted by algorithms as 
+#' having a particular rank or order. Instead, binary variables made of 1s and 0s are used to 
+#' arbitrarily assign a numeric value that has no apparent order.
+simple_rec %>%
+  recipes::step_dummy(state, county, city, zcta, one_hot = TRUE)
+#' 
+#' Our fips variable includes a numeric code for state and county - and therefore is 
+#' essentially a proxy for county. Since we already have county, we will just use it and keep 
+#' the fips ID as another ID variable.
+#' 
+#' We can remove the fips variable from the predictors using update_role() to make sure that 
+#' the role is no longer "predictor".
+#' We can make the role anything we want actually, so we will keep it something identifiable.
+simple_rec %>%
+  recipes::update_role("fips", new_role = "county id")
+#' 
+#' We also want to remove variables that appear to be redundant and are highly correlated with 
+#' others, as we know from our exploratory data analysis that many of our variables are 
+#' correlated with one another. We can do this using the step_corr() function.
+#' 
+#' We don’t want to remove some of our variables, like the CMAQ and aod variables, we can 
+#' specify this using the - sign before the names of these variables like so:
+simple_rec %>%
+  recipes::step_corr(all_predictors(), - CMAQ, - aod)
+#' 
+#' It is also a good idea to remove variables with near-zero variance, which can be done with 
+#' the step_nzv() function.
+#' Variables have low variance if all the values are very similar, the values are very sparse, 
+#' or if they are highly imbalanced. Again we don’t want to remove our CMAQ and aod variables.
+simple_rec %>%
+  recipes::step_nzv(all_predictors(), - CMAQ, - aod)
+#' 
+#' Let’s put all this together now.
+#' 
+#' Remember: it is important to add the steps to the recipe in an order that makes sense just 
+#' like with a cooking recipe.
+#' 
+#' First, we are going to create numeric values for our categorical variables, then we will 
+#' look at correlation and near-zero variance. Again, we do not want to remove the CMAQ and 
+#' aod variables, so we can make sure they are kept in the model by excluding them from those 
+#' steps. If we specifically wanted to remove a predictor we could use step_rm().
+simple_rec <- train_pm %>%
+  recipes::recipe(value ~ .) %>%
+  recipes::update_role(id, new_role = "id variable") %>%
+  recipes::update_role("fips", new_role = "county id") %>%
+  recipes::step_dummy(state, county, city, zcta, one_hot = TRUE) %>%
+  recipes::step_corr(all_predictors(), - CMAQ, - aod)%>%
+  recipes::step_nzv(all_predictors(), - CMAQ, - aod)
+
+simple_rec
+#' 
+#' Nice! Now let’s check our preprocessing.
+#' 
+#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' RUNNING PREPROCESSING
+#' First we need to use the prep() function of the recipes package to prepare for 
+#' preprocessing. However, we will specify that we also want to run and retain the 
+#' preprocessing for the training data using the retain = TRUE argument.
+library(recipes)
+prepped_rec <- prep(simple_rec, verbose = TRUE, retain = TRUE)
+
+names(prepped_rec)
+#' 
+#' Since we retained our preprocessed training data (i.e. prep(retain=TRUE)), we can take a 
+#' look at it by using the bake() function of the recipes package like this (this previously 
+#' used the juice() function):
+preproc_train <- bake(prepped_rec, new_data = NULL)
+glimpse(preproc_train)
+#' 
+#' Notice that this requires the new_data = NULL argument when we are using the training data.
+#' For easy comparison sake - here is our original data:
+glimpse(pm)
+#' 
+#' Notice how we only have 36 variables now instead of 50! Two of these are our ID variables 
+#' (fips and the actual monitor ID (id)) and one is our outcome (value). Thus we only have 
+#' 33 predictors now. We can also see that we no longer have any categorical variables. 
+#' Variables like state are gone and only state_California remains as it was the only state 
+#' identity to have nonzero variance. We can also see that there were more monitors listed as 
+#' "Not in a city" than any city.
+#' 
+#' -----------------------------------------------------------------------------
+#' Extract preprocessed testing data using bake()
+#' According to the tidymodels documentation:
+#'    "bake() takes a trained recipe and applies the operations to a data set to create a 
+#'    design matrix. For example: it applies the centering to new data sets using these means 
+#'    used to create the recipe."
+#' 
+#' Therefore, if you wanted to look at the preprocessed testing data you would use the bake() 
+#' function of the recipes package.
+baked_test_pm <- bake(prepped_rec, new_data = test_pm)
+glimpse(baked_test_pm)
+#' Notice that our city_Not.in.a.city variable seems to be NA values. Why might that be?
+#' Ah! Perhaps it is because some of our levels were not previously seen in the training set!
+#' 
+#' Let’s take a look using the set operations of the dplyr package. We can take a look at 
+#' cities that were different between the test and training set.
+traincities <- train_pm %>% distinct(city)
+testcities <- test_pm %>% distinct(city)
+#' #get the number of cities that were different:
+dim(dplyr::setdiff(traincities, testcities)) # Results = 381 cities
+#get the number of cities that overlapped:
+dim(dplyr::intersect(traincities, testcities)) # Results = 55 cities
+#' So, there are lots of different cities in our test data that are not in our training data!
+#' 
+#' So, let go back to our pm dataset and modify the city variable to just be values of in a 
+#' city or not in a city using the case_when() function of dplyr. This function allows you to 
+#' vectorize multiple if_else() statements.
+pm %>%
+  mutate(city = case_when(city == "Not in a city" ~ "Not in a city",
+                          city != "Not in a city" ~ "In a city"))
+#' 
+#' Alternatively you could create a custom step function to do this and add this to your 
+#' recipe, but that is beyond the scope of this case study.
+#' 
+#' We will need to repeat all the steps (splitting the data, preprocessing, etc) as the levels 
+#' of our variables have now changed.
+#' 
+#' While we are doing this, we might also have this issue for county. The county variables 
+#' appears to get dropped due to either correlation or near zero variance.
+#' It is likely due to near zero variance because this is the more granular of these 
+#' geographic categorical variables and likely sparse
+#' 
+#' 
+#' 
+#' 
+#' 
+#' 
+#' 
 #' 
 #' 
