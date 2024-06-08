@@ -39,8 +39,9 @@ library(tidymodels)
 #' THE DATA
 #' There are 48 predictors with values for 876 monitors (observations) - see descriptions in 
 #' the attached pdf in the dataset folder. 
-#' The data comes from the US Enivornmental Protection Agency (EPA), the National Aeronautics and Space Administration 
-#' (NASA), the US Census, and the National Center for Health Statistics (NCHS).
+#' The data comes from the US Enivornmental Protection Agency (EPA), the National Aeronautics 
+#' and Space Administration (NASA), the US Census, and the National Center for Health 
+#' Statistics (NCHS).
 #' 
 #' We have one CSV file that contains both our single outcome variable and all of our features 
 #' (or predictor variables). 
@@ -358,12 +359,181 @@ pm %>%
 #' appears to get dropped due to either correlation or near zero variance.
 #' It is likely due to near zero variance because this is the more granular of these 
 #' geographic categorical variables and likely sparse
+pm %<>% 
+  mutate(city = case_when(city == "Not in a city" ~ "Not in a city",
+                          city != "Not in a city" ~ "In a city"))
+#' NB: %<>% is known as the compound assignment operator, and it uses the following operation 
+#' (mutate() in this example) to permanently change the value of the called object (pm in this 
+#' example). Compare with the code just above, which uses %>% (this temporarily changes the 
+#' object, not globally)
+#' In a way, the latter helps to preview the results of an operation on an object, while still
+#' retaining the object's actual value. One can then apply the former to make the actual 
+#' /permanent change
+#' 
+set.seed(1234) # same seed as before
+pm_split <-rsample::initial_split(data = pm, prop = 2/3)
+pm_split
+
+train_pm <-rsample::training(pm_split)
+test_pm <-rsample::testing(pm_split)
+#' 
+#' Now we will create a new recipe:
+novel_rec <-train_pm %>%
+  recipe() %>%
+  update_role(everything(), new_role = "predictor") %>%
+  update_role(value, new_role = "outcome") %>%
+  update_role(id, new_role = "id variable") %>%
+  update_role("fips", new_role = "county id") %>%
+  step_dummy(state, county, city, zcta, one_hot = TRUE) %>%
+  step_corr(all_numeric()) %>%
+  step_nzv(all_numeric()) 
+
+novel_rec
+summary(novel_rec)
 #' 
 #' 
+#' Now we will check the preprocessed data again to see if we still have NA values.
+prepped_rec <- prep(novel_rec, verbose = TRUE, retain = TRUE)
+
+names(prepped_rec)
+#' 
+preproc_train <- bake(prepped_rec, new_data = NULL)
+glimpse(preproc_train)
+#' 
+baked_test_pm <- bake(prepped_rec, new_data = test_pm)
+glimpse(baked_test_pm)
+#' 
+#' Great, now we no longer have NA values!
 #' 
 #' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' SPECIFYING THE MODEL
+#' The first step is to define what type of model we would like to use. For our case, we are 
+#' going to start our analysis with a linear regression but we will demonstrate how we can try 
+#' different models.
+PM_model <- parsnip::linear_reg() # PM was used in the name for particulate matter
+PM_model
+#' 
+#' OK. So far, all we have defined is that we want to use a linear regression…Let’s tell 
+#' parsnip more about what we want.
+#' We would like to use the ordinary least squares method to fit our linear regression. So we 
+#' will tell parsnip that we want to use the lm package to implement our linear regression 
+#' (there are many options actually such as rstan, glmnet, keras, and sparklyr)
+#' 
+#' We will do so by using the set_engine() function of the parsnip package.
+lm_PM_model <- 
+  PM_model  %>%
+  parsnip::set_engine("lm")
+
+lm_PM_model
+#' 
+#' Here, we aim to predict the air pollution. You can do this with the set_mode() function of 
+#' the parsnip package, by using either set_mode("classification") or set_mode("regression").
+lm_PM_model <- 
+  PM_model  %>%
+  parsnip::set_engine("lm") %>%
+  parsnip::set_mode("regression")
+
+lm_PM_model
+#' 
+#' Now we will use the workflows package to keep track of both our preprocessing steps and our 
+#' model specification. It also allows us to implement fancier optimizations in an automated 
+#' way.
+#' If you recall novel_rec is the recipe we previously created with the recipes package and 
+#' lm_PM_model was created when we specified our model with the parsnip package. Here, we 
+#' combine everything together into a workflow.
+PM_wflow <-workflows::workflow() %>%
+  workflows::add_recipe(novel_rec) %>%
+  workflows::add_model(lm_PM_model)
+PM_wflow
+#' 
+#' Ah, nice. Notice how it tells us about both our preprocessing steps and our model 
+#' specifications.
+#' 
+#' Next, we “prepare the recipe” (or estimate the parameters) and fit the model to our 
+#' training data all at once. Printing the output, we can see the coefficients of the model.
+PM_wflow_fit <- parsnip::fit(PM_wflow, data = train_pm)
+PM_wflow_fit
 #' 
 #' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' ASSESSING THE MODEL FIT
+#' After we fit our model, we can use the broom package to look at the output from the fitted 
+#' model in an easy/tidy way.
+#' The tidy() function returns a tidy data frame with coefficients from the model (one row per 
+#' coefficient).
+#' Many other broom functions currently only work with parsnip objects, not raw workflows 
+#' objects. However, we can use the tidy function if we first use the pull_workflow_fit() 
+#' function.
+wflowoutput <- PM_wflow_fit %>% 
+  workflows::pull_workflow_fit() %>% 
+  broom::tidy() 
+wflowoutput
 #' 
+#' We have fit our model on our training data, which means we have created a model to predict 
+#' values of air pollution based on the predictors that we have included. Yay!
+#' 
+#' One last thing before we leave this section. We often are interested in getting a sense of 
+#' which variables are the most important in our model. We can explore the variable importance 
+#' using the vip() function of the vip package. This function creates a bar plot of variable 
+#' importance scores for each predictor variable (or feature) in a model. The bar plot is 
+#' ordered by importance (highest to smallest).
+#' 
+#' Notice again that we need to use the pull_workflow_fit() function. 
+#' Let’s take a look at the top 10 contributing variables:
+# install.packages("vip")
+library(vip)
+
+PM_wflow_fit %>% 
+  workflows::pull_workflow_fit() %>% 
+  vip(num_features = 10)
+#' 
+#' Results: The state in which the monitor was located (if it was in California or not) and the 
+#' CMAQ model appear to be the most important for predicting the air pollution at a given 
+#' monitor.
+#' 
+#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' MODEL PERFORMANCE: GETTING PREDICTED VALUES
+#' In this next section, our goal is to assess the overall model performance. The way we do 
+#' this is to compare the similarity between the predicted estimates of the outcome variable 
+#' produced by the model and the true outcome variable values.
+#' 
+#' Machine learning (ML) is an optimization problem that tries to minimize the distance between 
+#' our predicted outcome and actual outcome using our features (or predictor variables) as 
+#' input to a function that we want to estimate.
+#' 
+#' First, let’s pull out our predicted outcome values from the models we fit (using different 
+#' approaches).
+wf_fit <- PM_wflow_fit %>% 
+  workflows::pull_workflow_fit()
+
+wf_fitted_values <- wf_fit$fit$fitted.values
+head(wf_fitted_values)
+#' 
+#' Alternatively, we can get the fitted values using the augment() function of the broom 
+#' package using the output from workflows:
+wf_fitted_values <- 
+  broom::augment(wf_fit$fit, data = preproc_train) %>% 
+  select(value, .fitted:.std.resid)
+
+head(wf_fitted_values)
+#' 
+#' Finally, we can also use the predict() function. Note that because we use the actual 
+#' workflow here, we can (and actually need to) use the raw data instead of the preprocessed 
+#' data.
+values_pred_train <- 
+  predict(PM_wflow_fit, train_pm) %>% 
+  bind_cols(train_pm %>% select(value, fips, county, id)) 
+
+values_pred_train
+#' 
+yardstick::metrics(values_pred_train, truth = value, estimate = .pred)
 #' 
 #' 
