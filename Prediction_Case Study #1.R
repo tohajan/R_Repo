@@ -537,3 +537,88 @@ values_pred_train
 yardstick::metrics(values_pred_train, truth = value, estimate = .pred)
 #' 
 #' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' VISUALIZING MODEL PERFORMANCE
+#' Now, we can compare the predicted outcome values (or fitted values)  to the actual outcome 
+#' values that we observed:
+library(ggplot2)
+wf_fitted_values %>% 
+  ggplot(aes(x =  value, y = .fitted)) + 
+  geom_point() + 
+  xlab("actual outcome values") + 
+  ylab("predicted outcome values")
+#' 
+#' OK, so our range of the predicted outcome values appears to be smaller than the real values. 
+#' We could probably do a bit better.
+#' 
+#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' QUANTIFYING MODEL PERFORMANCE
+#' Next, let’s use different distance functions to assess how far off our predicted outcome 
+#' and actual outcome values are from each other:
+#' There are entire scholarly fields of research dedicated to identifying different distance 
+#' metrics for machine learning applications. However, we will focus on root mean squared error
+#' (rmse).
+#' One way to calculate these metrics within the tidymodels framework is to use the yardstick 
+#' package using the metrics() function.
+yardstick::metrics(wf_fitted_values, 
+                   truth = value, estimate = .fitted)
+#' 
+# A tibble: 3 × 3
+# .metric .estimator .estimate
+# <chr>   <chr>          <dbl>
+#   1 rmse    standard       1.98 
+# 2 rsq     standard       0.392
+# 3 mae     standard       1.47 
+#' 
+#' Here we see the RMSE in addition to the RSQ or the R squared value also known as the 
+#' coefficient of determination and the MAE, which stands for the mean absolute error.
+#' Alternatively if you only wanted one metric you could use the mae(), rsq(), or rmse() 
+#' functions, respectively.
+yardstick::rmse(wf_fitted_values, 
+                truth = value, estimate = .fitted)
+#' 
+#' 
+#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' ASSESSING MODEL PERFORMANCE ON V-FOLDS (using tune)
+#' We also intend to perform cross validation, so we will now split the training data further 
+#' using the vfold_cv() function of the rsample package.
+#' Again, because these are created at random, we need to use the base set.seed() function in 
+#' order to obtain the same results each time. We will create 10 folds.
+set.seed(1234)
+vfold_pm <- rsample::vfold_cv(data = train_pm, v = 10)
+vfold_pm
+#' 
+pull(vfold_pm, splits)
+#' 
+#' We can fit the model to our cross validation folds using the fit_resamples() function of 
+#' the tune package, by specifying our workflow object and the cross validation fold object we 
+#' just created.
+set.seed(122)
+resample_fit <- tune::fit_resamples(PM_wflow, vfold_pm)
+#' 
+#' We can now take a look at various performance metrics based on the fit of our cross 
+#' validation “resamples”.
+#' To do this we will use the collect_metrics() function of the tune package. This will show 
+#' us the mean of the accuracy estimate of the 4 different cross validation folds.
+resample_fit
+#' 
+tune::collect_metrics(resample_fit)
+#' 
+#' # A tibble: 2 × 6
+# .metric .estimator  mean     n std_err .config             
+# <chr>   <chr>      <dbl> <int>   <dbl> <chr>               
+#   1 rmse    standard   2.09     10  0.123  Preprocessor1_Model1
+# 2 rsq     standard   0.321    10  0.0357 Preprocessor1_Model1
+#' 
+#' Recall that the mean accuracy estimate will often be lower than a single accuracy estimate.
+#' Here, the mean RSQ is 0.321, a drop from 0.392 of the preceding single model
+#' 
+#' 
