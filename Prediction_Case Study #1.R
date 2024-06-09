@@ -862,6 +862,21 @@ tune_RF_results
 #' Now we can use the collect_metrics() function again to take a look at what happened with 
 #' our cross validation tests. We can see the different values chosen for mtry and min_n and 
 #' the mean rmse and rsq values across the cross validation samples.
+tune_RF_results %>%
+  tune::collect_metrics() %>%
+  head()
+#' 
+#' We can now use the show_best() function as it was truly intended, to see what values for 
+#' min_n and mtry resulted in the best performance.
+tune::show_best(tune_RF_results, metric = "rmse", n =1)
+#' 
+#' There we have it… looks like an mtry of 18 and min_n of 4 had the best rmse value. You can 
+#' verify this in the above output, but it is easier to just pull this row out using this 
+#' function. We can see that the mean rmse value across the cross validation sets was 1.57 (with
+#' a std_err of 0.111). Before tuning it was 1.60 with a std_err of 0.121 so the performance 
+#' in this particular case wasn't really improved, but that will not always be the case.
+#' 
+#' 
 #' 
 #' 
 #' 
