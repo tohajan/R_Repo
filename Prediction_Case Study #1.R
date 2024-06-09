@@ -622,3 +622,254 @@ tune::collect_metrics(resample_fit)
 #' Here, the mean RSQ is 0.321, a drop from 0.392 of the preceding single model
 #' 
 #' 
+#' 
+#' 
+#' 
+#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' 
+#' In the previous sections, we demonstrated how to build a machine learning model 
+#' (specifically a linear regression model) to predict air pollution with the tidymodels 
+#' framework. In the next few section, we will demonstrate another machine learning model.
+#' 
+#' -----------------------------------------------------------------------------
+#' RANDOM FOREST
+#' Now, we are going to predict our outcome variable (air pollution) using a decision tree 
+#' method called random forest.
+#' 
+#' In the case of random forest, multiple decision trees are created - hence the name forest, 
+#' and each tree is built using a random subset of the training data (with replacement) - 
+#' hence the full name random forest. This random aspect helps to keep the algorithm from 
+#' overfitting the data.
+#' The mean of the predictions from each of the trees is used in the final output.
+#' 
+#' In our case, we are going to use the random forest method of the the randomForest package.
+#' This package is currently not compatible with categorical variables that have more than 53 
+#' levels. See https://cran.r-project.org/web/packages/randomForest/NEWS for the documentation 
+#' about when this was updated from 25 levels. 
+#' Thus we will remove the zcta and county variables.
+#' 
+#' Note that the step_novel() function is necessary here for the state variable to get all 
+#' cross validation folds to work, because there will be different levels included in each 
+#' fold test and training sets. Thus there are new levels for some of the test sets which 
+#' would otherwise result in an error.
+#' According to the documentation for the recipes package:
+#'    "step_novel creates a specification of a recipe step that will assign a previously 
+#'    unseen factor level to a new value."
+RF_rec <- recipe(train_pm) %>%
+  update_role(everything(), new_role = "predictor")%>%
+  update_role(value, new_role = "outcome")%>%
+  update_role(id, new_role = "id variable") %>%
+  update_role("fips", new_role = "county id") %>%
+  step_novel("state") %>%
+  step_string2factor("state", "county", "city") %>%
+  step_rm("county") %>%
+  step_rm("zcta") %>%
+  step_corr(all_numeric())%>%
+  step_nzv(all_numeric())
+#' 
+#' The rand_forest() function of the parsnip package has three important arguments that act as 
+#' an interface for the different possible engines to perform a random forest analysis:
+#'    1. mtry - The number of predictor variables (or features) that will be randomly sampled 
+#'      at each split when creating the tree models. The default number for regression analyses 
+#'      is the number of predictors divided by 3.
+#'    2. min_n - The minimum number of data points in a node that are required for the node to 
+#'      be split further.
+#'    3. trees - the number of trees in the ensemble
+#'  
+#' We will start by trying an mtry value of 10 and a min_n value of 4. 
+#' Now that we have our recipe (RF_rec), let’s specify the model with rand_forest() from 
+#' parsnip.
+PMtree_model <- 
+  parsnip::rand_forest(mtry = 10, min_n = 4)
+PMtree_model
+#' 
+#' Next, we set the engine and mode:
+#' 
+#' Note that you could also use the ranger or spark packages instead of randomForest. If you 
+#' were to use the ranger package to implement the random forest analysis you would need to 
+#' specify an importance argument to be able to evaluate predictor importance. The options 
+#' are impurity or permutation.
+#' 
+#' These other packages have different advantages and disadvantages- for example ranger and 
+#' spark are not as limiting for the number of categories for categorical variables. For more 
+#' information see the documentation of each package.
+#' 
+#' Note that there are also other R packages for implementing random forest algorithms, but 
+#' these three packages (ranger, spark, and randomForest) are currently compatible with 
+#' tidymodels.
+# install.packages("randomForest")
+library(randomForest)
+#' 
+RF_PM_model <- 
+  PMtree_model %>%
+  set_engine("randomForest") %>%
+  set_mode("regression")
+
+RF_PM_model
+#' 
+#' Then, we put this all together into a workflow:
+RF_wflow <- workflows::workflow() %>%
+  workflows::add_recipe(RF_rec) %>%
+  workflows::add_model(RF_PM_model)
+RF_wflow
+#' 
+#' Finally, we fit the data to the model:
+RF_wflow_fit <- parsnip::fit(RF_wflow, data = train_pm)
+RF_wflow_fit
+#' 
+#' Now, we will look at variable importance:
+RF_wflow_fit %>% 
+  workflows::pull_workflow_fit() %>% 
+  vip(num_features = 10)
+#' 
+#' Interesting! In the previous model the CMAQ values and the state where the monitor was 
+#' located were also the top two most important, however predictors about education levels of 
+#' the communities where the monitor was located was among the top most important. Now we see 
+#' that population density and proximity to sources of emissions and roads are among the top 
+#' ten.
+#' 
+#' Now let’s take a look at model performance by fitting the data using cross validation:
+set.seed(456)
+resample_RF_fit <- tune::fit_resamples(RF_wflow, vfold_pm)
+tune::collect_metrics(resample_RF_fit)
+#' 
+#' OK, so the first model had a mean rmse value of 2.09. It looks like the random forest model 
+#' had a much lower rmse value of 1.60.
+#' 
+#' If we tuned our random forest model based on the number of trees or the value for mtry 
+#' (which is “The number of predictors that will be randomly sampled at each split when 
+#' creating the tree models”), we might get a model with even better performance.
+#' 
+#' However, our cross validated mean rmse value of 1.60 is quite good because our range of 
+#' true outcome values is much larger: (3.024, 22.259).
+#' 
+#' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' MODEL TUNING
+#' Hyperparameters are often things that we need to specify about a model. For example, the 
+#' number of predictor variables (or features) that will be randomly sampled at each split 
+#' when creating the tree models called mtry is a hyperparameter. The default number for 
+#' regression analyses is the number of predictors divided by 3. Instead of arbitrarily 
+#' specifying this, we can try to determine the best option for model performance by a 
+#' process called tuning.
+#' 
+#' Now let’s try some tuning.
+#' Let’s take a closer look at the mtry and min_n hyperparameters in our Random Forest model.
+#' 
+#' We aren’t exactly sure what values of mtry and min_n achieve good accuracy yet keep our 
+#' model generalizable for other data.
+#' 
+#' This is when our cross validation methods become really handy because now we can test out 
+#' different values for each of these hyperparameters to assess what values seem to work best 
+#' for model performance on these resamples of our training set data.
+#' 
+#' Previously we specified our model like so:
+RF_PM_model <- 
+  parsnip::rand_forest(mtry = 10, min_n = 4) %>%
+  set_engine("randomForest") %>%
+  set_mode("regression")
+
+RF_PM_model
+#' 
+#' Now instead of specifying a value for the mtry and min_n arguments, we can use the tune() 
+#' function of the tune package like so: mtry = tune(). This indicates that these 
+#' hyperparameters are to be tuned.
+tune_RF_model <- rand_forest(mtry = tune(), min_n = tune()) %>%
+  set_engine("randomForest") %>%
+  set_mode("regression")
+
+tune_RF_model
+#' 
+#' Again we will add this to a workflow, the only difference here is that we are using a 
+#' different model specification with tune_RF_model instead of RF_model:
+RF_tune_wflow <- workflows::workflow() %>%
+  workflows::add_recipe(RF_rec) %>%
+  workflows::add_model(tune_RF_model)
+RF_tune_wflow
+#' 
+#' Now we can use the tune_grid() function of the tune package to evaluate different 
+#' combinations of values for mtry and min_n using our cross validation samples of our 
+#' training set (vfold_pm) to see what combination of values performs best.
+#' 
+#' To use this function we will specify the workflow using the object argument and the samples 
+#' to use using the resamples argument. The grid argument specifies how many possible options 
+#' for each argument should be attempted.
+#' 
+#' By default 10 different values will be attempted for each hyperparameter that is being tuned.
+#' We can use the doParallel package to allow us to fit all these models to our cross 
+#' validation samples faster. So if you were performing this on a computer with multiple cores 
+#' or processors, then different models with different hyperparameter values can be fit to the 
+#' cross validation samples simultaneously across different cores or processors.
+#' 
+#' You can see how many cores you have access to on your system using the detectCores() 
+#' function in the parallel package.
+library(parallel)
+parallel::detectCores()
+#' Results: 8
+#' 
+#' The registerDoParallel() function will use the number for cores specified using the 
+#' cores= argument, or it will assign it automatically to one-half of the number of cores 
+#' detected by the parallel package.
+#' 
+#' We need to use set.seed() here because the values chosen for mtry and min_n may vary if we 
+#' preform this evaluation again because they are chosen semi-randomly (meaning that they are 
+#' within a range of reasonable values but still random).
+#' 
+#' Note: THIS STEP WILL TAKE SOME TIME.
+# install.packages("doParallel")
+doParallel::registerDoParallel(cores=2)
+set.seed(123)
+tune_RF_results <- tune::tune_grid(object = RF_tune_wflow, resamples = vfold_pm, grid = 20)
+
+tune_RF_results
+#' 
+#' See the tune getting started guide 
+#' (https://tune.tidymodels.org/articles/getting_started.html) for more information about 
+#' implementing this in tidymodels.
+#' 
+#' If you wanted more control over this process you could specify the different possible 
+#' options for mtry and min_n in the tune_grid() function using the grid_*() functions of the 
+#' dials package to create a more specific grid.
+#' By default the values for the hyperparameters being tuned are chosen semi-randomly 
+#' (meaning that they are within a range of reasonable values but still random).
+#' 
+#' Now we can use the collect_metrics() function again to take a look at what happened with 
+#' our cross validation tests. We can see the different values chosen for mtry and min_n and 
+#' the mean rmse and rsq values across the cross validation samples.
+#' 
+#' 
+#' 
+#' 
+#' 
+#' 
+#' 
+#' 
+#' 
+#' 
+#' 
