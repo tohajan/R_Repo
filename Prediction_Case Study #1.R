@@ -1,4 +1,5 @@
 #' **PREDICTION - CASE STUDY #1 (COURSERA)**
+# install.packages("tidymodels")
 library(tidymodels)
 #' A variety of different sources contribute different types of pollutants to what we call air 
 #' pollution.
@@ -877,8 +878,21 @@ tune::show_best(tune_RF_results, metric = "rmse", n =1)
 #' in this particular case wasn't really improved, but that will not always be the case.
 #' 
 #' 
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' -----------------------------------------------------------------------------
+#' FINAL MODEL PERFORMANCE EVALUATION
+#' Now that we have decided that we have reasonable performance with our training data, we can 
+#' stop building our model and evaluate performance with our testing data.
 #' 
-#' 
+#' Here, we will use the random forest model that we built to predict values for the monitors 
+#' in the testing data and we will use the values for mtry and min_n that we just determined 
+#' based on our tuning analysis to achieve the best performance.
+#' So, first we need to specify these values in a workflow. We can use the select_best() 
+#' function of the tune package to grab the values that were determined to be best for mtry and 
+#' min_n.
+tuned_RF_values <- select_best(tune_RF_results, "rmse")
+tuned_RF_values
 #' 
 #' 
 #' 
