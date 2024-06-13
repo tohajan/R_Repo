@@ -871,7 +871,7 @@ tune_RF_results %>%
 #' min_n and mtry resulted in the best performance.
 tune::show_best(tune_RF_results, metric = "rmse", n =1)
 #' 
-#' There we have it… looks like an mtry of 18 and min_n of 4 had the best rmse value. You can 
+#' There we have it… looks like an mtry of 15 and min_n of 3 had the best rmse value. You can 
 #' verify this in the above output, but it is easier to just pull this row out using this 
 #' function. We can see that the mean rmse value across the cross validation sets was 1.57 (with
 #' a std_err of 0.111). Before tuning it was 1.60 with a std_err of 0.121 so the performance 
@@ -891,8 +891,51 @@ tune::show_best(tune_RF_results, metric = "rmse", n =1)
 #' So, first we need to specify these values in a workflow. We can use the select_best() 
 #' function of the tune package to grab the values that were determined to be best for mtry and 
 #' min_n.
-tuned_RF_values <- select_best(tune_RF_results, "rmse")
+tuned_RF_values <- tune::select_best(tune_RF_results, metric = "rmse")
 tuned_RF_values
+#' 
+#' Now we can finalize the model/workflow that we used for tuning with these values.
+RF_tuned_wflow <-RF_tune_wflow %>%
+  tune::finalize_workflow(tuned_RF_values)
+#' 
+#' With the workflows package, we can use the splitting information for our original data 
+#' pm_split to fit the final model on the full training set and also on the testing data using 
+#' the last_fit() function of the tune package. No preprocessing steps are required.
+#' 
+#' The results will show the performance using the testing data.
+overallfit <-tune::last_fit(RF_tuned_wflow, pm_split)
+# or
+overallfit <-RF_wflow %>%
+  tune::last_fit(pm_split)
+#' 
+#' The overallfit output has a lot of really useful information about the model, the data test 
+#' and training split, and the predictions for the testing data.
+#' To see the performance on the test data we can use the collect_metrics() function like we 
+#' did before:
+tune::collect_metrics(overallfit)
+#' 
+#' Awesome! We can see that our rmse of 1.40 is quite similar with our testing data cross 
+#' validation sets. We achieved quite good performance, which suggests that we could predict 
+#' other locations with more sparse monitoring based on our predictors with reasonable accuracy.
+#' 
+#' Now if you wanted to take a look at the predicted values for the test set (the 292 rows 
+#' with predictions out of the 876 original monitor values) you can use the 
+#' collect_predictions() function of the tune package:
+test_predictions <- tune::collect_predictions(overallfit)
+head(test_predictions)
+#' 
+#' Nice!
+#' Now, we can compare the predicted outcome values (or fitted values) to the actual outcome 
+#' values that we observed:
+library(ggplot2)
+test_predictions %>% 
+  ggplot(aes(x =  value, y = .pred)) + 
+  geom_point() + 
+  xlab("actual outcome values") + 
+  ylab("predicted outcome values") +
+  geom_smooth(method = "lm")
+#' 
+#' 
 #' 
 #' 
 #' 
