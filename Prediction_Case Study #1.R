@@ -154,7 +154,7 @@ pm %>%
 #' using the cor() function of the stats package (which is loaded automatically). Then we use 
 #' the corrplot::corrplot() function. First we need to select only the numeric variables using 
 #' dplyr.
-install.packages("corrplot")
+# install.packages("corrplot")
 library(corrplot)
 PM_cor <- cor(pm %>% dplyr::select_if(is.numeric))
 corrplot::corrplot(PM_cor, tl.cex = 0.5)
