@@ -1,0 +1,6 @@
+#' 
+#' LINEAR DISRIMINANT ANALYSIS
+#' 
+#' 
+#' 
+#' 
