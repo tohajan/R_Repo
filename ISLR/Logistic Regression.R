@@ -117,5 +117,5 @@ summary(sm_fit2)
 #' All IVs still remain non-significant
 #' 
 #' Conclusion: The model from the random-split data performed no better than the
-#' non-random split. In fact, it appears worse for a smaller model
+#' non-random split. In fact, it appears worse for a smaller model.
 #' 
