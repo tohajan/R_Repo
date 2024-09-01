@@ -38,11 +38,11 @@ summary(fit3)
 par(mfrow = c(2,2))
 plot(fit3) # produces various visualizations of the linear model
 #'  1. Residuals vs Fitted: this checks for non-linearity in the data. In this example, there is
-#' some curvature in red line, indicating the presence of non-linearity in the data
+#' some curvature in the red line, indicating the presence of non-linearity in the data
 #'  2. Normal Q-Q: checks for non-normality. In this example, the data points do not perfectly
 #' align with the dotted line, indicating some presence of non-normality
 #'  3. Scale-Location: checks if the variance changes with the fit, which seems to be the case
-#' in the current example. This may also be due to data's non-linearity 
+#' in the current example. This may also be due to the data being non-linear 
 #'  4. Residuals vs Leverage:
 #' 
 fit4 <- update(fit3, ~. -age-indus) #models a new fit based on fit3, but excluding the age and
@@ -54,25 +54,27 @@ summary(fit4)
 #' -----------------------------------------------------------------------------
 #' -----------------------------------------------------------------------------
 #' Nonlinear terms and Interactions
-fit5 <- lm(medv~lstat*age, Boston) # the "*" denoted interaction between variables
+fit5 <- lm(medv~lstat*age, Boston) # the "*" denotes interaction between variables
 summary(fit5)
+#' Results: lstat and the interaction term are both statistically significant, age alone 
+#' remains non-significant
 #' 
 fit6 <- lm(medv~lstat+I(lstat^2), Boston) # A quadratic term is now added for lstat: this is 
 #' one way to adjust for the non-linearity observed in the scatterplot of medv vs lstat
 #' NB: the Identity function is used to protect the quadratic term (to avoid interference from
 #' the lm function in an unintended manner???)
 summary(fit6)
-#' Results: both the linear and quadratic terms are statitically significant
+#' Results: both the linear and quadratic terms are statistically significant
 #' 
 attach(Boston) #this makes the variable readily available in the workspace without calling on
-#' data set name
+#' the data set name
 #' Error message:
 #' The following object is masked _by_ .GlobalEnv:
 #'      age
 #' Why? an object named age (same name as a variable in the Boston data) already exists in the
 #' workspace, so the existing object masks the variable age of the Boston dataset.
 #' Possible solutions: 
-#'    1) always type "Boston::age" when referring the variable age
+#'    1) always type "Boston::age" when referring the age variable of the Boston data
 #'    2) delete the pre-existing "age" object from memory, then reattach the Boston dataset
 #'    3) rename one of the two conflicting objects
 #' However, the age variable may not need to be referred to for the rest of this lesson; so, 
@@ -81,8 +83,8 @@ attach(Boston) #this makes the variable readily available in the workspace witho
 par(mfrow=c(1,1))
 plot(medv~lstat) #replots the orginal scatterplot (see the non-linearity)
 #' Now include the quadratic fit:
-#' Note that the abline() function can no longer be used, since it's only used for a linear fit. And
-#' it's certain that the plot is not linear. Use the points() function instead:
+#' Note that the abline() function can no longer be used, since it's only used for a linear fit. 
+#' And it's now confirmed that the plot is not linear. Use the points() function instead:
 points(lstat, fitted(fit6), col="red", pch=20)
 #' Recall that fit6 is the quadratic model, fitted earlier
 #' 
@@ -109,13 +111,13 @@ summary(Carseats)
 #' 
 fit_a <- lm(Sales~. + Income:Advertising + Age:Price, Carseats)
 #' NB: except Sales, all other variables are IVs. Also, two interaction terms have been added:
-#' IncomexAge and AdvertisingxPrice  
+#' (Income x Advertising) and (Age x Price)  
 summary(fit_a)
-#' Results: some IVs are statistically significant, while others are not. The interaction
-#' between Income and Advertising is significant but between Income and Age is not
+#' Results: some IVs are statistically significant, while others are not. The 
+#'(Income x Advertising) interaction is significant but (Age x Price is not)
 #' 
 contrasts(Carseats$ShelveLoc) #shows how the specified qualitative variable will be coded when
-#' when put in a linear model
+#' put in a linear model
 #' Results:
 # Good Medium
 # Bad       0      0
