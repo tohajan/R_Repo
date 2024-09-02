@@ -20,7 +20,7 @@ class(lda.pred) # it's a list output. So convert to a data type that is responsi
 # indexing (e.g., matrix or data frame):
 data.frame(lda.pred)[1:5,]
 #' 
-table(lda.pred$class, Smarket.2005$Direction) # a tabel of predicted values vs. true
+table(lda.pred$class, Smarket.2005$Direction) # a table of predicted values vs. true
 # values
 mean(lda.pred$class==Smarket.2005$Direction) #correct classification rate
 #' Results: 55.9%
