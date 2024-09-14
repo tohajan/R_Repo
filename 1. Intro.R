@@ -1,4 +1,5 @@
 #---
+
 #------------------------------ Basic commands in R -------------------------
 c(5, 7, 9, 8) #concatenates a series of items/objects
 ?apply #checks what a function is about (opens a new window about the function)
