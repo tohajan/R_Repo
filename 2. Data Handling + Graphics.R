@@ -30,29 +30,30 @@ tail(my_data, n = 12) # last 12
 tail(my_data, n = -20) # all but the first 20
 
 #' some other applicable functions
-class(my_data) # tells the class/type of the object (here it is a data frame - df)
+class(my_data) # prints the class/type of the object (here it is a data frame - df)
 length(my_data) # length of the object (i.e., no. of cols in the df)
 ncol(my_data) # same as above
 nrow(my_data) # no. of rows
 names(my_data) # names of columns
 rownames(my_data) # index names (i.e., row names)
-str(my_data) #' gives a brief overview of the data frame (its dimension, data type and first 
-# few values in each column/variable
+str(my_data) #' gives a brief overview of the data frame (its dimension, data type 
+#..and first few values in each column/variable
 dim(my_data) #gives the df's dimension (i.e., no. of rows and columns in the data)
-summary(my_data) # gives summary statistics (mean, median, min, etc.) for each numeric column.
-# The function does not apply to character/alphabetical variables.
+summary(my_data) # gives summary statistics (mean, median, min, etc.) for each 
+#..numeric column. The function does not apply to character/categorical variables.
 
 library("dplyr")
 glimpse(my_data) 
-#' glimpse (a function in the dplyr library) produces outputs similar to the str() function 
-#' used above.
+#' glimpse (a function in the dplyr library) produces outputs similar to the str() 
+#..function used above.
 
 #' Converting a categorical var:
 my_data$Month <- factor(my_data$Month) 
 # converts the Month var to factor type (the var is categorical)
 
 glimpse(my_data) # Note: in the output, Month var is now labelled 'fct' (factor)
-levels(my_data$Month) <- list(May = "5", June = "6", July = "7", Aug = "8", Sept = "9") # labels the values/levels of the Month var
+levels(my_data$Month) <- list(May = "5", June = "6", July = "7", Aug = "8", 
+                              Sept = "9") # labels the values/levels of the Month var
 levels(my_data$Month) # lists the categories in the Month column
 
 #' 
@@ -63,35 +64,40 @@ plot(my_data$Ozone, my_data$Temp)
 idx <- identify(my_data$Ozone, my_data$Temp)
 # this syntax allows to click on specific points on the graph.
 #' The default labeling is row number. This can be modified as follows:
-idx <- identify(my_data$Ozone, my_data$Temp, labels = my_data$Month, plot = TRUE) # labels the data points with the corresponding month name.
+idx <- identify(my_data$Ozone, my_data$Temp, labels = my_data$Month, plot = TRUE) 
+# labels the data points with the corresponding month name.
 
 #' Even better:
-idx <- identify(my_data$Ozone, my_data$Temp, labels = paste(as.character(my_data$Day),
+idx <- identify(my_data$Ozone, my_data$Temp, 
+                labels = paste(as.character(my_data$Day),
                       "-", as.character(my_data$Month)), plot = TRUE)
 #' 
 #' More operations:
-#' To check the frequency of specific values in a var/col. For example, the variable Month:
+#' To check the frequency of the values of a var/col. For example, the 
+#'..variable Month:
 xtabs(~Month, my_data) 
 
 #' 
 ## -----------------------------------------------------------------------------
 #' ## Dealing with NA's (missing values) 
 #' NA indicates a missing case/obs \
-#' NaN = "not a number" (e.g., in cases where a math operation is ran on a non-numeric var)
-#' #' Although there already are missing cases in the current data set, one could throw in more:
+#' NaN = "not a number" (e.g., in cases where a math operation is ran on a non-numeric 
+#'..var). Although there already are missing cases in the current data set, one could
+#'..throw in more:
 my_data[154, ] <- c(NA) # adds another row, with all cells having NA values
 my_data[, 7] <- c(NA) # adds a new col, all cells having NA values
 View (my_data)
 
-View(is.na(my_data)) # checks for all NA values anywhere in the data set; returns a table of 
-# logical (TRUE/FALSE) values
+View(is.na(my_data)) # checks for all NA values anywhere in the data set; 
+#..prints a table of logical (TRUE/FALSE) values
 
 any(is.na(my_data)) # returns TRUE if at least one missing case exists in the data
 
-all(is.na(my_data)) # checks if all entries in the specified object (i.e., the entire dataset) 
-# are missing values
+all(is.na(my_data)) # checks if all entries in the specified object (i.e., the entire
+#..dataset) are missing values
 
-all(is.na(my_data[,7])) # checks if all entries in the specified column are missing values
+all(is.na(my_data[,7])) # checks if all entries in the specified column are 
+#..missing values
 
 # The recently added row and column contain only missing cases, so they can be removed:
 my_data <- my_data[-7] # removes the last column (no. 7)
@@ -108,27 +114,32 @@ colSums(is.na(my_data)) # shows the distribution of missing cases across all col
 clean_data <- na.omit(my_data) # generates a new data with all missing cases removed.
 nrow(clean_data)
 
-nrow(my_data)-nrow(clean_data) # gives the difference between the no. of rows in the original 
-# data and the np. of rows in the cleaned data (i.e., no. of missing obs/rows deleted)
+nrow(my_data) - nrow(clean_data) # gives the difference between the no. of rows in 
+#..the original data and the no. of rows in the cleaned data (i.e., no. of missing 
+#..obs/rows deleted)
 
 #' Alternatively:
-clean_data2 <- my_data[complete.cases(my_data), ] # this code indexes only the rows with complete cases (no missing values)
+clean_data2 <- my_data[complete.cases(my_data), ] # this code indexes only the rows 
+#..with complete cases (no missing values)
 nrow(clean_data2)
 
 #' NB: These two approaches greatly reduce sample size. To preserve sample size, remove NA 
 #' values only from variables of interest. E.g, if Ozone is not needed for analysis:
-clean_data3 <- na.omit(my_data[-1]) # this removes the NA values from all but col 1 (Ozone)
-nrow(clean_data3)
+clean_data3 <- na.omit(my_data[-1])
+ncol(clean_data3) #only 5 cols left (Ozone is removed/ignored)
+nrow(clean_data3) #146 rows
 
-nrow(my_data)-nrow(clean_data3) 
+nrow(my_data) - nrow(clean_data3) 
 # only 7 rows removed (as opposed to 42 rows deleted in the previous approaches)
 
 #' Also, missing values can be removed based on some predefined condition(s):
-clean_data4 <- my_data[, colSums(is.na(my_data)) < 10] # a new data containing only columns with less than 10 missing cases
+clean_data4 <- my_data[, colSums(is.na(my_data)) < 10] 
+# subsets a new data containing only columns with less than 10 missing cases
 
-#' next, rows missing cases are then removed from the new data:
+#' next, rows with missing cases are removed from the new data:
 final_data <- na.omit(clean_data4)
-nrow(final_data)
+ncol(final_data) # 5 cols
+nrow(final_data) #146 rows
 
 #' 
 #' 
@@ -141,14 +152,15 @@ owl_morph <- read.csv("owl.morphometrics.csv", header = TRUE)
 
 summary(owl_morph)
 View(owl_morph)
-any(is.na(owl_morph))
+any(is.na(owl_morph)) #prints False
 str(owl_morph)
 
 owl_morph$common.name <- as.factor(owl_morph$common.name)
 owl_morph$latin <- as.factor(owl_morph$latin)
 #' Both columns have now been changed to factor (i.e., categorical variables)
 
-plot(owl_morph$weight.g, owl_morph$wingspan.cm, xlab = "Owl weight (g)", ylab = "Owl wingspan (cm)")
+plot(owl_morph$weight.g, owl_morph$wingspan.cm, xlab = "Owl weight (g)", 
+     ylab = "Owl wingspan (cm)")
 
 #' 
 owl_clutch <- read.csv("owl.clutch.size.csv", header = TRUE)
@@ -158,12 +170,13 @@ any(is.na(owl_clutch))
 #' Since the two data sets have the same contents in row 1 (common.name) orderly arranged, 
 #' they can be combined using the cbind function:
 owl_morph_clutch <- cbind(owl_morph, owl_clutch)
-View(owl_morph_clutch)
+
 
 #' NB: The combination syntax above leads to duplication of the "common name row". To avoid this:
 owl_morph_clutch <- cbind(owl_morph, owl_clutch[, 2]) # here, only the 2nd col of the second data is used in the combination
 
 names(owl_morph_clutch)[6] <- "clutch.size" # renames the newly added column
+View(owl_morph_clutch)
 
 #' plot a graph of clutch size vs wing span
 plot(owl_morph_clutch$wingspan.cm, owl_morph_clutch$clutch.size,
@@ -231,6 +244,7 @@ duckweed_df <- data.frame(R1 = c(10, 20, 30, 40, 50, 60, 70, 80, 90, 100),
                           R5 = c(10, 40, 50, 65, 78, 96, 107, 120, 144, 157),
                           R6 = c(10, 30, 57, 98, 106, 130, 160, 177, 189, 198))
 class(duckweed_df)
+duckweed_df
 
 #' calculate the means per row:
 rowMeans(duckweed_df)
@@ -241,18 +255,17 @@ apply(duckweed_df, 1, mean)
 #' However, unlike matrices and arrays, a data frame can contain non-numeric elements:
 duckweed_df$Day <- as.factor(1:10)
 (duckweed_df)
-#' NB: although the newly added column contains values 1 to 10, these values have been assigned 
-#' non-numeric type (factor)
+#' NB: although the newly added column contains values 1 to 10, these values have 
+#' been assigned non-numeric type (factor)
 duckweed_df <- duckweed_df[, c(7, 1:6)] # rearranges the data so that the new column comes first
 class(duckweed_df$Day) # check that the column is correctly identified as factor 
 #' 
 #' Now using the apply function again:
 apply(duckweed_df, 1, mean)
-
 #' 
 #' NB: the above returns an error message ("Warning: argument is not numeric or logical: 
-#' returning NA") because each row now has a factor, a data type that is not receptive to 
-#' arithmetic operations.
+#'returning NA") because each row now has a factor, a data type that is not receptive 
+#'..to arithmetic operations.
 apply(duckweed_df[, 2:7], 1, mean) # the non-numeric column is now excluded
 apply(duckweed_df[, -1], 1, mean) # the column can also be excluded this way
 apply(duckweed_df[, -c(1,2,4,6)], 1, mean) # can also exclude several columns
@@ -262,12 +275,11 @@ apply(duckweed_df[, -c(1,2,4,6)], 1, mean) # can also exclude several columns
 duckweed_df[6, 5] <- NA
 (duckweed_df)
 apply(duckweed_df[, -1], 1, mean)
-
 #' 
-#' NB: Now that there is a missing value in a row, that row returns a mean of "NA". If that 
-#' specific cell is not of interest, one could instruct R to ignore it and compute the mean 
-#' for only the non-missing values in that row:
-apply(duckweed_df[, -1], 1, mean, na.rm = TRUE) 
+#' NB: Now that there is a missing value in a row, that row returns a mean of "NA". If 
+#'..that specific cell is not of interest, one could instruct R to ignore it and 
+#'..compute the mean for only the non-missing values in that row:
+apply(duckweed_df[, -1], 1, mean, na.rm = TRUE)
 # na.rm ignores the missing value(s) during the operation
 
 #' 
