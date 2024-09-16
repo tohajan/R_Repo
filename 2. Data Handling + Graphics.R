@@ -204,8 +204,8 @@ View(owl_morph_clutch_life)
 #' 
 #' ## The apply() Family of Functions 
 #' 1. apply() 
-#' It has the general structure: apply(object, margin, function...); the object is usually a 
-#' matrix or an array. Consider the ffg example:
+#' It has the general structure: apply(object, margin, function...); the object is 
+#' ..usually a matrix or an array. Consider the ffg example:
 duckweed_mat <- matrix(c(10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 10, 30, 50, 80, 100, 150, 200,
                          250, 270, 300, 10, 30, 36, 80, 96, 106, 110, 130, 136, 144, 10, 15, 30,
                          50, 70, 86, 95, 100, 105, 190, 10, 40, 50, 65, 78, 96, 107, 120, 144,
@@ -325,14 +325,16 @@ cago_df <- data.frame(Diet1 = c(2, 5, 4, 5, 3, 5, 4, 4, 4, 5),
                   Diet3 = c(3, 4, 2, 5, 2, 6, 5, 6, 2, 4),
                   Diet4 = c(2, 2, 3, 2, 5, 2, 4, 3, 5, 7))
 lapply(cago_df, mean)
-#' Again, using the lapply returns the output in a list format. There is also no margin argument, 
-#' unlike apply(). \
+#' Again, using the lapply returns the output in a list format. And there's no margin 
+#' ..argument, unlike apply().
 #' 
 #' A vector example:
 random <- c("This", "is", "a", "random", "vector")
-#' The no. of letters in each of the words contained in the vector can be determined as follows:
+#' The no. of letters in each of the words contained in the vector can be determined 
+#'..as follows:
 lapply(random, nchar)
-#' NB -- unlike the lapply() function, the following syntax returns an output in a vector format:
+#' NB -- unlike the lapply() function, the following syntax returns an output in a 
+#' ..vector format:
 nchar(random)
 
 #' 
@@ -342,7 +344,8 @@ nchar(random)
 #' 3. sapply()
 #' It has the same general structure as lapply() and also applies to lists, vectors, 
 #' and data frames. However, outputs are returned in a simplified format if possible 
-#' (vector, matrix, or list). In addition, as in lapply(), sapply() has no margin argument.
+#' (vector, matrix, or list). In addition, as in lapply(), sapply() has no margin 
+#' ..argument.
 cago_list
 sapply(cago_list, mean) # results are in a vector format
 #' 
@@ -356,8 +359,8 @@ sapply(random, nchar)
 sequence <- function(x) {
   seq(nchar(x))
 }
-#' Reminder: the seq() function returns a sequence from 1 up to and including the specified 
-#' number. E.g.,: 
+#' Reminder: the seq() function returns a sequence from 1 up to and including the 
+#' ..specified number. E.g.,: 
 seq(3) # this outputs "1 2 3"
 seq(nchar("that")) #this outputs "1 2 3 4"
 
@@ -369,21 +372,21 @@ sapply(random, sequence) # the output is displayed as a list.
 ## -----------------------------------------------------------------------------
 #' 4. tapply() 
 #' General structure: tapply(x, index, function, ...) \
-#' --> It applies to object subsets (vector, column of a data frame, element of a list, etc...)
+#' --> It applies to object subsets (vector, column of a data frame, element of a 
+#' ..list, etc...)
 patient_ID <- 1:30
 age <- c(32, 45, 44, 34, 23, 26, 37, 45, 12, 23, 44, 35, 57, 65, 76, 43, 42, 34,
          36, 37, 23, 21, 28, 24, 29, 13, 18, 32, 25, 28)
 treatment <- c("a", "c", "c", "b", "b", "b", "c", "b", "c", "a", "a", "a", "a", "a","b",
                "b", "b", "b", "c", "c", "c", "a", "b", "c", "b", "a", "a", "c", "a", "c")
 #' 
-tapply(age, treatment, mean) # gives the mean age by treatment groups
+tapply(age, treatment, mean) # gives the mean age by treatment group
 
 #' Store the data in a data frame:
 med_df <- data.frame(patient_ID, treatment, age)
 head(med_df) 
 #' 
 tapply(med_df$age, med_df$treatment, mean)
-
 #' 
 #' A list could also work:
 med_list <- list(patient_ID = patient_ID, treatment = treatment, age = age)
@@ -401,43 +404,44 @@ tapply(med_list$age, med_list$treatment, mean)
 #' aggregate() function 
 #' --> Similar to tapply() but with wider applications
 #' --> General structure: aggregate(formula, data, function, ...) \
-#' --> works with list or data frame (other data structures will have to be converted to either 
-#' of these two)
+#' --> works with list or data frame (other data structures will first have to be 
+#' ..converted to either of these two)
 #' 
-#' Example -- Using the co2_uptake data (a built-in data set in R that contains an experiment
-#' data of CO2 uptake in plants from two different locations):
+#' Example -- Using the co2_uptake data (a built-in data set in R that contains an 
+#' experiment data of CO2 uptake in plants from two different locations):
 co2_uptake <- CO2
 head(co2_uptake)
 tail(co2_uptake)
 #' Add a new column to the data:
-co2_uptake$height <- c(35.77, 43.95, 38.10, 43.20, 43.02, 39.19, 31.60, 36.88, 41.11, 43.64,
-                       36.82, 33.86, 30.17, 36.92, 36.15, 43.60, 32.35, 43.92, 40.50, 37.46, 
-                       33.92, 42.19, 30.20, 35.64, 39.63, 36.39, 42.95, 33.88, 43.75, 41.10, 
-                       34.57, 30.21, 37.19, 33.45, 40.93, 32.93, 36.21, 40.74, 32.87, 35.98,
-                       43.57, 39.91, 35.02, 33.20, 37.89, 34.96, 30.99, 40.12, 33.33, 34.48,
-                       38.22, 35.21, 39.60, 40.29, 42.90, 36.09, 38.75, 36.65, 31.51, 39.32, 
-                       30.27, 34.21, 40.59, 43.67, 32.10, 30.08, 42.10, 36.60, 43.89, 38.33,
-                       36.99, 32.05, 37.54, 34.51, 33.69, 41.80, 30.91, 39.23, 30.93, 42.73,
-                       34.82, 33.20, 31.57, 43.32)
+co2_uptake$height <- c(35.77, 43.95, 38.10, 43.20, 43.02, 39.19, 31.60, 36.88, 41.11, 
+                       43.64, 36.82, 33.86, 30.17, 36.92, 36.15, 43.60, 32.35, 43.92, 
+                       40.50, 37.46, 33.92, 42.19, 30.20, 35.64, 39.63, 36.39, 42.95, 
+                       33.88, 43.75, 41.10, 34.57, 30.21, 37.19, 33.45, 40.93, 32.93, 
+                       36.21, 40.74, 32.87, 35.98, 43.57, 39.91, 35.02, 33.20, 37.89, 
+                       34.96, 30.99, 40.12, 33.33, 34.48, 38.22, 35.21, 39.60, 40.29, 
+                       42.90, 36.09, 38.75, 36.65, 31.51, 39.32, 30.27, 34.21, 40.59, 
+                       43.67, 32.10, 30.08, 42.10, 36.60, 43.89, 38.33, 36.99, 32.05, 
+                       37.54, 34.51, 33.69, 41.80, 30.91, 39.23, 30.93, 42.73, 34.82, 
+                       33.20, 31.57, 43.32)
 
 View(co2_uptake)
-#' There are 7 concentration categories (95,175,250,350,500,675,1000) in the data. To calculate, 
-#' say, mean uptake for each conc category:
+#' There are 7 concentration categories (95,175,250,350,500,675,1000) in the data. 
+#' To calculate, say, mean uptake for each conc category:
 aggregate(uptake~conc, co2_uptake, mean) # tabular output
-#' As mentioned earlier, the same operation could be performed using tapply(), but the output 
-#' is in a vector format (unlike the aggregate fxn which produced a tabular output):
+#' As mentioned earlier, the same operation could be performed using tapply(), but 
+#' the output is in a vector format (unlike the aggregate fxn which produced a tabular 
+#' output):
 tapply(co2_uptake$uptake, co2_uptake$conc, mean) # vector output
 #' 
-#' Even better, aggregate() can handle multiple subsetting. For example, to calculate the mean 
-#' uptake by concentration category and treatment group:
+#' Even better, aggregate() can handle multiple subsetting. For example, to calculate 
+#' ..the mean uptake by concentration category and treatment group:
 aggregate(uptake ~ conc + Treatment, co2_uptake, mean)
 #' ...or, mean uptake by conc, treatment, and type:
 aggregate(uptake ~ conc + Treatment + Type, co2_uptake, mean)
 #' 
-#' Operations can also be performed on multiple elements/columns. For example, to calculate the 
-#' mean uptake and mean height by conc:
+#' Operations can also be performed on multiple elements/columns. For example, to 
+#' calculate the mean uptake and mean height by conc:
 aggregate(cbind(uptake, height) ~ conc, co2_uptake, mean)
-
 
 #' aggregate() also works on lists:
 co2uptake_list <- list(plant = co2_uptake$Plant, type = co2_uptake$Type, 
@@ -445,8 +449,7 @@ co2uptake_list <- list(plant = co2_uptake$Plant, type = co2_uptake$Type,
                        uptake = co2_uptake$uptake, height = co2_uptake$height)
 
 aggregate(cbind(uptake, height) ~ conc, co2uptake_list, mean)
-#' NB: the output is also in tabular form
-#' 
+#' NB: the output is again in a table
 #' 
 #' Other functions can also be applied using aggregate(). For example:
 aggregate(uptake ~ conc, co2uptake_list, length) # no. of uptake values per conc group
@@ -458,8 +461,9 @@ aggregate(type ~ conc, co2uptake_list, length) # no. of type values per conc gro
 ## -----------------------------------------------------------------------------
 ## -----------------------------------------------------------------------------
 #' paste() function
-#' This function allows to merge multiple elements together as one. For example, working with 
-#' a sample of birds, one could assign each individual a label containing their name and ID:
+#' This function allows to join multiple elements together as one. For example, in a
+#' ..sample of birds, one could assign each individual a label containing their name 
+#' ..and ID:
 paste("RWBL", 1)
 #' Alternatively, the entries can be first stored before calling the paste() function:
 species <- "RWBL"
@@ -468,9 +472,9 @@ paste(species, num)
 #' A "sep" argument can be added to define the separator (default is space):
 paste(species, num, sep = "-")
 
-#' When paste() is used on a vector containing several elements, it doesn't work (i.e., each 
-#' element in that vector maintains its independence), unless the "collapse" argument is 
-#' properly invoked/defined:
+#' When paste() is used on a vector containing several elements, it doesn't work 
+#' ..(i.e., individual element in that vector maintains its independence), unless 
+#' the "collapse" argument is properly invoked/defined:
 id <- c("RWBL", 1)
 paste(id) # each element in vector "id" is pasted separately
 #' 
@@ -478,27 +482,26 @@ paste(id, collapse = " ") # default value for collapse is NULL
 # the paste function now works as expected
 #' 
 paste(id, collapse = "_")
-#' NB: the "collapse" argument works like the "sep" argument; so it could take different 
-#' values like space, underscore, period, etc. The default value is NULL.
+#' NB: the "collapse" argument works like the "sep" argument; so it could take 
+#' ..different values like space, underscore, period, etc. The default value is NULL.
 
 #' The paste() function is really powerful when used with several vectors:
 species <- c("RWBL", "MODO", "AMRO", "AMCR", "MODO")
 num <- 1:5
 paste(species, num, sep = "_")
-#' If the pasted vectors are of different length, the longer one gets recyled with the shorter one 
-#' until completion, E.g.:
+#' If the pasted vectors are of different length, the longer one gets recyled with 
+#' ..the shorter one until completion, E.g.:
 species <- c("RWBL", "MODO", "AMRO", "AMCR", "MODO")
 num <- 1:8
 paste(species, num, sep = "_")
 #' This "recycling" feature comes in handy during repetitions:
 num <- 1:10
-paste("Bird", num) # the "Bird" element gets recycled through the num var, thus printing 
-#' Bird 1, Bird 2, ... Bird 10.
+paste("Bird", num) # the "Bird" element gets recycled through the num var, thus 
+#the output is "Bird 1", "Bird 2", ... "Bird 10".
 
 #' Applying paste() to a df:
 df <- data.frame(species, num = 1:5)
 paste(df$species, df$num, sep = "_") # as usual, the output is in vector format
-
 #' 
 #' The output of the paste() function can be saved in an object and put to further use:
 output = paste(df$species, df$num, sep = "_")
@@ -513,10 +516,10 @@ df$idnum = output
 ## -----------------------------------------------------------------------------
 ## -----------------------------------------------------------------------------
 #' # **PART 4**
-#' ## Basic Plotting
+#' ## Basic Graph Plotting
 maxd <- 10
-storks <- numeric(maxd)
-babies <- numeric(maxd)
+storks <- numeric(maxd) # a vector with 10 unoccupied positions
+babies <- numeric(maxd)  # another vector with 10 unoccupied positions
 for (i in 1:maxd) {
   set.seed(15)
   storks[i] <- rnorm(1, i * 100, 10) # Recall -- general form is rnorm(n, mean, sd)
@@ -532,17 +535,20 @@ abline(lm(babies ~ storks)) # fits a regression line to the plot
 # let's plot a new graph on the existing plot: 
 newstorkdata <- c(220, 411, 630, 705, 729, 850)
 newbabydata <- c(11, 22, 38, 41, 45, 52)
-points(newstorkdata, newbabydata, col = "red", pch = 19) #plots this on the existing graph; 
-#...red  here is the color of the new points/observations
-abline(lm(newbabydata ~ newstorkdata), col = "red") # red here is the color of the new line
+points(newstorkdata, newbabydata, col = "red", pch = 19) #plots this on the existing 
+#graph; "red"  here is the color of the new points/observations
+abline(lm(newbabydata ~ newstorkdata), col = "red") # the newly fitted line is red
 
 # add a legend to the graph:
-legend(100, 90, c("old data", "new data"), pch = c(1, 19), col = c("black", "red"))
-# NB: The first argument for the legend function is "x,y". Here, the value is 100,90, i.e., the 
-#...legend should be placed at the point on the graph where x=100 and y=90
+legend(100, 80, c("old data", "new data"), pch = c(1, 19), col = c("black", "red"))
+# NB: The first argument for the legend function is "x,y". Here, the value is 100,80, 
+#..i.e., the legend should be placed at the point on the graph where x=100 and y=80
 
-# The legend could also be placed by replacing the coordinate argument with a locator argument:
+# The legend could also be placed by replacing the coordinate argument with a locator 
+#..argument:
 legend(locator(1), c("old data", "new data"), pch = c(1, 19), col = c("black", "red"))
+#' after running the syntax, use a cursor to click on a desired position on the graph
+#' for the legend to be placed 
 #' 
 #' The plot area could also be split as follows:
 par(mfrow= c(1, 2)) # splits the plot area into a row with 2 columns
@@ -565,19 +571,20 @@ View(mydata)
 library("ggplot2")
 names(mydata)
 #' Now, let's create a box plot:
-ggplot(mydata, aes(supp, len)) # creates an empty plot, with variable "supp" on the x-axis and
-#..."len" on the y-axis
+ggplot(mydata, aes(supp, len)) # creates an empty plot, with variable "supp" on 
+#..the x-axis and "len" on the y-axis
 
-ggplot(mydata, aes(supp, len)) + geom_boxplot() # inserts a boxplot into the empty plot created above
+ggplot(mydata, aes(supp, len)) + geom_boxplot() # creates a boxplot of "len" vs "supp"
 
 # differentiate columns of box plots by the dose category:
 ggplot(mydata, aes(supp, len)) + geom_boxplot() + facet_grid(. ~ dose)
 #' Alternatively, this "subsetting" can be done in the aesthetic ("aes") argument:
-ggplot(mydata, aes(supp, len, fill = dose)) + geom_boxplot() # this creates all box plots on a 
-#...single graph, each category differentiated by a distinct color.
+ggplot(mydata, aes(supp, len, fill = dose)) + geom_boxplot() # same as the last, 
+#..but the dose categories are now differentiated by colors.
 
-#' Further, the color can be set such that darker/lighter color indicates an increase or 
-#' ...decrease in levels of the categorizing variable (e.g., dose in the current example):
+#' Further, the color can be set such that darker/lighter color indicates an increase 
+#' or a decrease in levels of the categorizing variable (e.g., dose in the current 
+#' ..example):
 my_color <- c("#fff7bc", "#fec44f", "#d95f0e") # yellow, orange, and red colors, respectively
 ggplot(mydata, aes(supp, len, fill = dose)) + geom_boxplot() + scale_fill_manual(
                                     name = "Dose (mm)", breaks = c("0.5", "1", "2"),
@@ -622,8 +629,9 @@ mydata <- read.csv("Mammal_lifehistories_v2.csv")
 names(mydata)
 View(mydata)
 head(mydata)
-summary(mydata) # gives basic statistics (min, max, mean, median, etc.) of each numeric column. A
-#..similar function but with more detailed output is the describe function in psych package:
+summary(mydata) # gives basic statistics (min, max, mean, median, etc.) of each 
+#..numeric column. A similar function but with more detailed output is the describe 
+#..function in psych package:
 library("psych")
 describe(mydata)
 ncol(mydata)
@@ -637,19 +645,20 @@ glimpse(mydata)
 mydata <- mydata[mydata$gestation.mo > 0 & mydata$mass.g > 0 & mydata$litter.size > 0, ]
 # Note that this syntax removes missing obs only from variables of interest
 
-m <- ggplot(mydata, aes(x = gestation.mo)) # a histogram uses only one variable, which is thus
-#...defined for the x-axis
+m <- ggplot(mydata, aes(x = gestation.mo)) # a histogram uses only one variable, which
+#..is thus :defined for the x-axis
 m + geom_histogram()
 #' Change the width of the bars:
 m + geom_histogram(binwidth = 0.4)
 
-#' To create different histograms by, say, order categories (1st column in the current data):
+#' To create different histograms by, say, order categories (1st column in the current 
+#' data):
 m + geom_histogram(binwidth = 0.4) + facet_grid(order ~ .) 
-# NB: the syntax can be switched for the facet_grid(), i.e., "variable ~ ." [Recall: the syntax 
-#... was ". ~ variable" for the boxplots plotted earlier]
+# NB: the syntax can be switched for the facet_grid(), i.e., "variable ~ ." [Recall: 
+#..the syntax was ". ~ variable" for the boxplots plotted earlier]
 
-#' PS: the result is too tiny to read because there are too many order categories, some 
-#' ...well-sampled and others under-sampled.
+#' PS: the result is too tiny to read because there are too many order categories, 
+#' some more represented than others.
 #' 
 #' Check the # of obs in each order category:
 xtabs(~ order, mydata) # some orders have only 1 obs, and there are orders with 100+
@@ -681,10 +690,10 @@ co2data <- co2data[co2data$SECTOR != "Total, all sectors", ]
 # install.packages("tidyverse") # package already installed
 # library(ggplot2) # library opened already
 co2_scatter <- ggplot(co2data, aes(year, log(co2_ann_kilotonnes), colour = 
-                                     SECTOR)) + geom_point() + stat_smooth(method = "lm")
+                                SECTOR)) + geom_point() + stat_smooth(method = "lm")
 co2_scatter
-#' The scatterplot has some portions cut off because there are too many SECTOR categories. 
-#' Try a subset of these categories:
+#' The scatterplot has some portions cut off because there are too many SECTOR 
+#' categories. Try a subset of these categories:
 library("dplyr")
 co2data_order <- co2data %>% group_by(SECTOR) %>% summarise(co2mean = 
                             mean(co2_ann_kilotonnes)) %>% arrange(desc(co2mean))
@@ -692,15 +701,16 @@ co2data_order <- co2data %>% group_by(SECTOR) %>% summarise(co2mean =
 #' first, group the co2data by the variable SECTOR, 
 #' next, display the mean co2 output for each sector in a table, 
 #' next, arrange the rows by descending order of the mean CO2.
-## -----------------------------------------------------------------------------------------------------------------
+## -------------------------------------------------------------------------------
 View(co2data_order)
 head(co2data_order)
 
-co2data_order_top10 <- co2data_order[1:10, ] # a new data set containing only the 10 SECTORS 
-#...with the highest mean co2
+co2data_order_top10 <- co2data_order[1:10, ] # a new data set containing only the 
+#..10 SECTORS with the highest mean co2
 
-top10 <- c(co2data_order_top10$SECTOR) # concatenates the values in the SECTOR column of 
-#...the new data
+top10 <- c(co2data_order_top10$SECTOR) # concatenates the values in the SECTOR 
+top10
+#..column of the new data
 top10[5] # the 5th element in the vector
 
 #' From the original data, sieve out observations in the top 10 sectors into a new data:
