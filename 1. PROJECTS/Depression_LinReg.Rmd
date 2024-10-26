@@ -9,6 +9,17 @@ output: github_document
 ```{r}
 library(haven) #contains the read_dta function
 library(tidyverse) #contains many of the functions to be used in regression modeling, and dplyr
+library(rsample) 
+library(naniar)
+library(skimr)
+library(PerformanceAnalytics)
+library(recipes)
+library(parsnip)
+library(workflows)
+library(yardstick)
+library(ggplot2)
+library(tune)
+library(broom)
 ```
 
 ## Exploratory Data Analysis
@@ -349,7 +360,6 @@ glimpse(nhanes_2017_Mar2020)
 ```
 
 ```{r}
-library(skimr)
 skim(nhanes_2017_Mar2020)
 ```
 
@@ -362,7 +372,6 @@ nhanes_2017_Mar2020 %>%
 ```
 
 ```{r}
-# library(naniar)
 vis_miss(nhanes_2017_Mar2020)
 ```
 
@@ -380,7 +389,6 @@ skim(nhanes_2017_Mar2020_nomissing)
 #### Correlation
 
 ```{r}
-library(PerformanceAnalytics)
 nhanes_2017_Mar2020_nomissing %>% 
   select_if(is.numeric) %>%
   chart.Correlation()
@@ -407,24 +415,173 @@ ggplot(nhanes_2017_Mar2020_nomissing, aes(sqrt(dep_score))) + geom_density() #sq
 ggplot(nhanes_2017_Mar2020_nomissing, aes(sqrt(sqrt(dep_score)))) + geom_density() #4th root transformation
 ```
 
-There is no notable improvement in the shape, even after transformation. 
+There is no notable improvement in the shape, even after log, square root, and 4th root transformations.  
+
+Go ahead and build the model; run the assumption checks after.
 
 
+### Model A (With Raw DV)
+#### Split the data into training and test sets
+```{r}
+set.seed(58)
+nhanes_split <- initial_split(nhanes_2017_Mar2020_nomissing, prop = 3/4) #75% for training set
+
+nhanes_split # count of training vs. test vs total
+```
+
+```{r}
+train_nhanes <- training(nhanes_split)
+test_nhanes <- testing(nhanes_split)
+```
 
 
+### Data preprocessing
+
+```{r}
+names(train_nhanes)
+```
 
 
+```{r}
+#specify variable roles (predictors vs outcome)
+dep_recipe <- train_nhanes %>%
+  recipe(dep_score ~ sex + age + race_eth + educ + marital + physact + alc_drinks + 
+           cig100 + bmi + sleep_hrs)
+
+dep_recipe
+# 1 outcome, 10 features/predictors
+```
+
+```{r}
+summary(dep_recipe)
+```
+
+In the above output, <chr[3]> and <chr[2> denote character and numeric types, respectively.
+
+```{r}
+#dummy recode categorical predictors
+dep_recipe <- dep_recipe %>%
+  step_dummy(all_nominal_predictors(), one_hot = FALSE)
+#one_hot=FALSE: omits the first dummy variable (to serve as reference category) in each categorical predictor. In anticipation of this, the desired reference group was placed first when naming labels and levels (in the EDA section above).
+
+# Otherwise, one_hot=TRUE: omits no category, if no reference category is needed
+dep_recipe
+```
 
 
+#### Model specification
+
+```{r}
+ols_model <- linear_reg()
+```
+
+```{r}
+ols_model <- ols_model %>% 
+  set_engine("lm") %>%
+  set_mode("regression")
+
+ols_model
+```
 
 
+#### Simulate the preprocessing
+```{r}
+recipe_prepped <- prep(dep_recipe, verbose = TRUE, retain = TRUE)
+recipe_prepped
+```
 
 
+```{r}
+prepped_train <- bake(recipe_prepped, new_data = NULL)
+glimpse(prepped_train)
+```
 
 
+#### Model Fitting
+```{r}
+ols_workflow <- workflow() %>%
+  add_recipe(dep_recipe) %>%
+  add_model(ols_model)
+
+ols_workflow
+```
+
+```{r}
+#Now estimate the model parameters/constants using the training data, i.e., fit the model using the data
+ols_fit <- fit(ols_workflow, data=train_nhanes)
+
+ols_fit
+```
 
 
+#### Model Evaluation
+```{r}
+ols_fitstats <- ols_fit %>%
+  extract_fit_parsnip()
+
+head(ols_fitstats$fit$fitted.values)
+```
 
 
+```{r}
+predict(ols_fit, new_data = test_nhanes)
+```
+
+Get more information on the prediction/evaluation performance:
+```{r}
+ols_fitted_values <- augment(ols_fitstats$fit, data = prepped_train)
+```
 
 
+```{r}
+some_columns <- ols_fitted_values[, c("dep_score", ".fitted", ".std.resid")]
+some_columns
+```
+
+```{r}
+# obtain the actual rmse value
+rmse(ols_fitted_values, truth = dep_score, estimate = .fitted)
+```
+
+RMSE is 4.00 (pretty high), it seems the model performed poorly. See more details on on model performance:
+```{r}
+ols_fitted_values %>%
+  ggplot(aes(x = dep_score, y = .fitted)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs( x = "True depression score", y = "Predicted depression score")
+```
+
+Try Boxcox transformation of the DV
+
+
+### Model B (Box-Cox transformed DV)
+```{r}
+#apply the boxcox function
+#The function works only with positive values. Dv contains 0 values, so add a constant across:
+nhanes_2017_Mar2020_nomissing["dep_modified"] <- nhanes_2017_Mar2020_nomissing$dep_score + 1
+# add 1 as a constant
+
+boxcox_trans <- boxcox(lm(dep_modified ~ sex + age + race_eth + educ + marital + physact + alc_drinks + 
+           cig100 + bmi + sleep_hrs, data = nhanes_2017_Mar2020_nomissing), 
+           lambda = seq(-2,2,0.1))
+```
+
+```{r}
+#Determine the optimal lambda value
+lambda_opt <- boxcox_trans$x[which.max(boxcox_trans$y)]
+lambda_opt
+```
+
+```{r}
+#add a new column containing the transformed value of the Dv
+nhanes_2017_Mar2020_nomissing$dep_boxcox <- 
+  ifelse(lambda_opt==0,
+         log(nhanes_2017_Mar2020_nomissing$dep_modified),
+         (nhanes_2017_Mar2020_nomissing$dep_modified ^ lambda_opt - 1) / lambda_opt)
+
+View(nhanes_2017_Mar2020_nomissing)
+```
+
+
+#### Split the data into training and test sets
