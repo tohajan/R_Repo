@@ -1,0 +1,430 @@
+---
+title: "Depression_LinReg"
+author: "Toheeb"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+
+```{r}
+library(haven) #contains the read_dta function
+library(tidyverse) #contains many of the functions to be used in regression modeling, and dplyr
+```
+
+## Exploratory Data Analysis
+### Depression data
+```{r}
+dep <- read_dta("G:/My Drive/Programming/Data Science/DATA SETS/NHANES/NHANES 2017-March 2020/depression.dta")
+```
+
+```{r}
+dim(dep)
+```
+
+```{r}
+tail(dep,100)
+```
+
+```{r}
+# check the unique values in each column of the data
+unique_value <- function(data){
+  for (i in data) {
+    print(unique(i))
+  }
+}
+
+unique_value(dep)
+```
+
+
+```{r}
+#recode 7's and 9's as missing
+dep[dep==7 | dep==9] <- NA
+```
+
+```{r}
+#recheck the unique values
+unique_value(dep)
+```
+ 
+
+```{r}
+#create a new column for depression score
+dep$dep_score <- rowSums(dep[, c("dpq010","dpq020","dpq030","dpq040","dpq050",
+                                 "dpq060","dpq070","dpq080","dpq090")], na.rm = TRUE)
+```
+
+```{r}
+#retain only ID and depression score columns
+depression <- dep[,c(1,12)]
+head(depression)
+```
+
+### Demographics data
+```{r}
+dem <- read_dta("G:/My Drive/Programming/Data Science/DATA SETS/NHANES/NHANES 2017-March 2020/demographics.dta")
+head(dem)
+dim(dem)
+```
+
+
+```{r}
+demographics <- dem[, c("seqn", "riagendr", "ridageyr", "ridreth3", 
+                        "dmdeduc2", "dmdmartz")]
+head(demographics)
+```
+
+Demographics code book:  
+riagendr (Sex): 1=male, 2=female  
+riadageyr (Age): 0-79; 80=80yrs and older
+ridreth3 (race/ethnicity): 1=Mex. American, 2=Other Hispanic, 3=NH White, 4=NH Black, 6=NH Asian, 7= Other race  
+dmdeduc2 (education level): 1=less than 9th grade, 2=9-11th grade, 3=HS Graduate/GED equiv, 4=some college or AA degree, 5=College graduate or above, 7=Refused, 9=Don't know  
+dmdmartz (marital status): 1=married/living with partner, 2=widowed/divorced/separated, 3=never married, 77=Refused, 99=Don't know
+
+
+```{r}
+#rename columns
+demo <- demographics %>%
+  rename(
+    sex = riagendr,
+    age = ridageyr,
+    race_eth = ridreth3,
+    educ = dmdeduc2,
+    marital = dmdmartz
+  )
+
+unique_value(demo)
+```
+
+```{r}
+head(demo)
+```
+
+
+```{r}
+#recode "refused" and "unknown" as missing values
+demo_recode <- demo %>%
+  mutate(
+    educ = na_if(educ,7),
+    educ = na_if(educ,9),
+    marital = na_if(marital,77),
+    marital = na_if(marital,99)
+  )
+
+# check that the recoding worked
+unique(demo_recode["educ"])
+unique(demo_recode["marital"])
+```
+
+
+
+```{r}
+#recode values in other columns
+demo_recode <- demo_recode %>%
+  mutate(
+    race_eth = case_when(
+      race_eth == 2 ~ 1, # Hispanic
+      race_eth == 3 ~ 2, # NH White
+      race_eth == 4 ~ 3, # NH Black
+      race_eth == 6 ~ 4, # NH Asian
+      race_eth == 7 ~ 5, # Others
+      TRUE ~ race_eth # retains other values as is 
+    )
+  )
+
+# check
+unique(demo_recode$race_eth)
+```
+
+
+```{r}
+#check data type of each column
+sapply(demo_recode, class) 
+#can also use "str(df)" for the same task
+```
+
+
+
+```{r}
+#convert categorical variables to factor type, and label accordingly
+demogr_final <- demo_recode %>%
+  mutate(
+    sex = factor(sex,
+                 levels=c(1,2),
+                 labels=c("M", "F")), 
+  #NB: the first level in the list will be the reference level when one_hot argument is set to False (later in the step_dummy function)
+    race_eth = factor(race_eth,
+                      levels = c(2, 1, 3, 4, 5),
+                      labels=c("NHWhite", "Hispanic", "NHBlack", "NHAsian", "Others")),
+    educ = factor(educ,
+                  levels=c(3, 1, 2, 4, 5),
+                  labels=c("HS/GED", "<9th grade", "9-11th grade", "some college", ">= college grad")),
+    marital = factor(marital,
+                     levels=c(1,2,3),
+                     labels=c("mard./liv. w/part", "wid./div./sep.", "nev. mard."))
+  )
+
+#Check:
+sapply(demogr_final, class) 
+```
+
+
+```{r}
+head(demogr_final)
+```
+
+### Physical activity data
+
+```{r}
+phys_act <- read_dta("G:/My Drive/Programming/Data Science/DATA SETS/NHANES/NHANES 2017-March 2020/physical-activity.dta")
+```
+
+
+```{r}
+head(phys_act)
+```
+
+paq665 (engaged in any moderate-intensity sports, fitness, or recreational activities that cause a small increase in breathing or heart rate such as brisk walking, bicycling, swimming, or volleyball for at least 10 minutes continuously?): 1=yes, 2=no
+
+```{r}
+#subset only the needed columns
+physAct <- phys_act[, c("seqn", "paq665")]
+head(physAct)
+```
+
+```{r}
+#rename variable
+physAct <- physAct %>%
+  rename(physact = paq665)
+
+sapply(physAct, class)
+```
+
+
+
+```{r}
+#recode values as needed
+physAct <- physAct %>%
+  mutate(
+    physact = case_when(
+      physact == 7~NA,
+      physact == 9 ~ NA,
+      TRUE ~ physact),
+    physact = factor(physact,
+                     levels=c(1,2),
+                     labels=c("Active", "Inactive"))
+  )
+
+unique(physAct$physact)
+head(physAct)
+```
+
+### Alcohol use data
+```{r}
+drink <- read_dta("G:/My Drive/Programming/Data Science/DATA SETS/NHANES/NHANES 2017-March 2020/alcohol-use.dta")
+
+head(drink)
+```
+
+alq130: Average # alcoholic drinks/day - past 12 mos
+
+```{r}
+#obtain only the needed columns
+drinking <- drink[, c("seqn", "alq130")]
+names(drinking)[names(drinking) == "alq130"] <- "alc_drinks"
+head(drinking)
+```
+
+```{r}
+unique(drinking$alc_drinks)
+```
+
+
+```{r}
+#recode values
+drinking[drinking == 777 | drinking == 999] <- NA
+unique(drinking$alc_drinks)
+```
+
+
+### Cigarette use
+```{r}
+smoking <- read_dta("G:/My Drive/Programming/Data Science/DATA SETS/NHANES/NHANES 2017-March 2020/cigarette-use.dta")
+
+head(smoking)
+```
+
+
+```{r}
+#obtain needed columns
+cig_use <- smoking[, c("seqn", "smq020")]
+
+#rename column
+names(cig_use)[names(cig_use) == "smq020"] <- "cig100"
+```
+
+smq020: smoked at least 100 cigarettes in life
+
+```{r}
+#recode values as needed
+cig_use <- cig_use %>%
+  mutate(
+    cig100 = case_when(
+      cig100 == 7~NA,
+      cig100 == 9 ~ NA,
+      TRUE ~ cig100),
+    cig100 = factor(cig100,
+                     levels=c(1,2),
+                     labels=c("Yes", "No"))
+  )
+
+unique(cig_use$cig100)
+head(cig_use)
+```
+
+
+### BMI
+```{r}
+bmi <- read_xpt("G:/My Drive/Programming/Data Science/DATA SETS/NHANES/NHANES 2017-March 2020/p_bmx.xpt")
+
+head(bmi)
+```
+
+bmxbmi: bmi in kg/m2
+
+```{r}
+#obtain the columns of interest
+bmi_data <- bmi[, c("SEQN","BMXBMI")]
+
+#rename column
+names(bmi_data)[names(bmi_data) == "SEQN"] <- "seqn"
+names(bmi_data)[names(bmi_data) == "BMXBMI"] <- "bmi"
+
+head(bmi_data)
+```
+
+
+### Sleep
+
+```{r}
+sleep <- read_dta("G:/My Drive/Programming/Data Science/DATA SETS/NHANES/NHANES 2017-March 2020/sleep-disorder.dta")
+
+head(sleep)
+```
+
+sld012 (Number of hours usually sleep on weekdays or workdays): 3-13.5=range of values, 2=less than 3 hrs, 14=13hours or more.
+
+```{r}
+#obtain only the needed columns
+sleep_data <- sleep[, c("seqn","sld012")]
+
+#rename column
+names(sleep_data)[names(sleep_data) == "sld012"] <- "sleep_hrs"
+
+head(sleep_data)
+```
+
+
+### Merge data
+```{r}
+data_list <- list(depression,demogr_final,physAct,
+                                   drinking,cig_use,bmi_data,sleep_data)
+nhanes_2017_Mar2020 <- reduce(data_list, full_join, by="seqn")
+
+head(nhanes_2017_Mar2020)
+```
+
+
+### Check for missing values and patterns
+#### Missing values
+
+```{r}
+#get the data shape
+dim(nhanes_2017_Mar2020)
+```
+
+
+```{r}
+glimpse(nhanes_2017_Mar2020)
+```
+
+```{r}
+library(skimr)
+skim(nhanes_2017_Mar2020)
+```
+
+
+```{r}
+#check number of missing values in each column
+nhanes_2017_Mar2020 %>% 
+  map(is.na) %>%
+  map(sum)
+```
+
+```{r}
+# library(naniar)
+vis_miss(nhanes_2017_Mar2020)
+```
+
+```{r}
+nhanes_2017_Mar2020_nomissing <- nhanes_2017_Mar2020 %>% drop_na()
+
+dim(nhanes_2017_Mar2020_nomissing)
+```
+
+```{r}
+skim(nhanes_2017_Mar2020_nomissing)
+```
+
+
+#### Correlation
+
+```{r}
+library(PerformanceAnalytics)
+nhanes_2017_Mar2020_nomissing %>% 
+  select_if(is.numeric) %>%
+  chart.Correlation()
+```
+
+
+
+#### Density Plot
+```{r}
+#Check the distribution of the DV: depression score
+ggplot(nhanes_2017_Mar2020_nomissing, aes(dep_score)) + geom_density()
+#the DV is not normally distributed
+```
+
+
+
+
+```{r}
+#Re-Check the distribution of the DV
+par(mfrow=c(2,2))
+ggplot(nhanes_2017_Mar2020_nomissing, aes(dep_score)) + geom_density() #raw value
+ggplot(nhanes_2017_Mar2020_nomissing, aes(log(dep_score))) + geom_density() #log transformation
+ggplot(nhanes_2017_Mar2020_nomissing, aes(sqrt(dep_score))) + geom_density() #square root transformation
+ggplot(nhanes_2017_Mar2020_nomissing, aes(sqrt(sqrt(dep_score)))) + geom_density() #4th root transformation
+```
+
+There is no notable improvement in the shape, even after transformation. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
