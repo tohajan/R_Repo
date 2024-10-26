@@ -45,7 +45,7 @@ unique_value <- function(data){
   }
 }
 
-unique_value(dep)
+# unique_value(dep)
 ```
 
 
@@ -56,7 +56,7 @@ dep[dep==7 | dep==9] <- NA
 
 ```{r}
 #recheck the unique values
-unique_value(dep)
+# unique_value(dep)
 ```
  
 
@@ -105,7 +105,7 @@ demo <- demographics %>%
     marital = dmdmartz
   )
 
-unique_value(demo)
+# unique_value(demo)
 ```
 
 ```{r}
@@ -247,15 +247,11 @@ names(drinking)[names(drinking) == "alq130"] <- "alc_drinks"
 head(drinking)
 ```
 
-```{r}
-unique(drinking$alc_drinks)
-```
 
 
 ```{r}
 #recode values
 drinking[drinking == 777 | drinking == 999] <- NA
-unique(drinking$alc_drinks)
 ```
 
 
@@ -421,7 +417,7 @@ There is no notable improvement in the shape, even after log, square root, and 4
 Go ahead and build the model; run the assumption checks after.
 
 
-### Model A (With Raw DV)
+## Model A (With Raw DV)
 #### Split the data into training and test sets
 ```{r}
 set.seed(58)
@@ -556,7 +552,7 @@ ols_fitted_values %>%
 Try Boxcox transformation of the DV
 
 
-### Model B (Box-Cox transformed DV)
+## Model B (Box-Cox transformed DV)
 ```{r}
 #apply the boxcox function
 #The function works only with positive values. Dv contains 0 values, so add a constant across:
@@ -581,8 +577,147 @@ nhanes_2017_Mar2020_nomissing$dep_boxcox <-
          log(nhanes_2017_Mar2020_nomissing$dep_modified),
          (nhanes_2017_Mar2020_nomissing$dep_modified ^ lambda_opt - 1) / lambda_opt)
 
-View(nhanes_2017_Mar2020_nomissing)
+# View(nhanes_2017_Mar2020_nomissing)
+# the transformed DV values are the same (=0)
+# this may be due to the lambda optimal value (-0.1818182) being close to zero. Try log instead
 ```
 
 
+## Model C (Log-transform DV)
+```{r}
+nhanes_2017_Mar2020_nomissing$dep_log <- log(nhanes_2017_Mar2020_nomissing$dep_modified)
+nhanes_log <- nhanes_2017_Mar2020_nomissing[c(1,3:12,14)]
+names(nhanes_log)
+```
+
 #### Split the data into training and test sets
+```{r}
+set.seed(58)
+nhanes_log_split <- initial_split(nhanes_log, prop = 3/4) #75% for training set
+
+nhanes_log_split # count of training vs. test vs total
+```
+
+```{r}
+train_nhanes_log <- training(nhanes_log_split)
+test_nhanes_log <- testing(nhanes_log_split)
+```
+
+
+### Data preprocessing
+
+```{r}
+names(train_nhanes_log)
+```
+
+
+```{r}
+#specify variable roles (predictors vs outcome)
+log_recipe <- train_nhanes_log %>%
+  recipe(dep_log ~ sex + age + race_eth + educ + marital + physact + alc_drinks + 
+           cig100 + bmi + sleep_hrs)
+
+log_recipe
+# 1 outcome, 10 features/predictors
+```
+
+
+```{r}
+summary(log_recipe)
+```
+
+In the above output, <chr[3]> and <chr[2> denote character and numeric types, respectively.
+
+```{r}
+#dummy recode categorical predictors
+log_recipe <- log_recipe %>%
+  step_dummy(all_nominal_predictors(), one_hot = FALSE)
+
+log_recipe
+```
+
+
+#### Model specification
+
+```{r}
+log_OLSmodel <- linear_reg()
+```
+
+```{r}
+log_OLSmodel <- log_OLSmodel %>% 
+  set_engine("lm") %>%
+  set_mode("regression")
+
+log_OLSmodel
+```
+
+
+#### Simulate the preprocessing
+```{r}
+LOGrecipe_prepped <- prep(log_recipe, verbose = TRUE, retain = TRUE)
+LOGrecipe_prepped
+```
+
+
+```{r}
+LOGprepped_train <- bake(LOGrecipe_prepped, new_data = NULL)
+glimpse(LOGprepped_train)
+```
+
+
+#### Model Fitting
+```{r}
+log_workflow <- workflow() %>%
+  add_recipe(log_recipe) %>%
+  add_model(log_OLSmodel)
+
+log_workflow
+```
+
+```{r}
+#Now estimate the model parameters/constants using the training data, i.e., fit the model using the data
+logOLS_fit <- fit(log_workflow, data=train_nhanes_log)
+
+logOLS_fit
+```
+
+
+#### Model Evaluation
+```{r}
+LOGols_fitstats <- logOLS_fit %>%
+  extract_fit_parsnip()
+
+head(LOGols_fitstats$fit$fitted.values)
+```
+
+
+```{r}
+predict(ols_fit, new_data = test_nhanes)
+```
+
+Get more information on the prediction/evaluation performance:
+```{r}
+LOGols_fitted_values <- augment(LOGols_fitstats$fit, data = LOGprepped_train)
+```
+
+
+```{r}
+check <- LOGols_fitted_values[, c("dep_log", ".fitted", ".std.resid")]
+check
+```
+
+```{r}
+# obtain the actual rmse value
+rmse(LOGols_fitted_values, truth = dep_log, estimate = .fitted)
+```
+
+RMSE is 0.85, much more lower than the initial value of 4.00 (from the model with raw DV). Model appears to have improved tremendously with log transformation:
+```{r}
+LOGols_fitted_values %>%
+  ggplot(aes(x = dep_log, y = .fitted)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs( x = "True log of depression score)", y = "Predicted log of depression score")
+```
+
+
