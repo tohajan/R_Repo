@@ -20,6 +20,7 @@ library(yardstick)
 library(ggplot2)
 library(tune)
 library(broom)
+library(MASS)
 ```
 
 ## Exploratory Data Analysis
